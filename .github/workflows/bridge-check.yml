@@ -10,6 +10,7 @@ jobs:
     steps:
       - name: Проверка
         run: |
+          exec > >(tee result.txt) 2>&1
           B=https://deep-cinema.kozenkov-nikita-vladimirovich.workers.dev
           ID=8bdd4fd94d2b435eb58d03130cd9998d
           echo "== Мост"
@@ -39,3 +40,7 @@ jobs:
           t "oauth.yandex.ru/device/code" "{\"url\":\"https://oauth.yandex.ru/device/code\",\"method\":\"POST\",\"headers\":{\"content-type\":\"application/x-www-form-urlencoded\"},\"body\":\"$(form "client_id=$ID&device_id=bridgecheck01&device_name=check")\"}"
           t "oauth.yandex.ru/token (неверный код, ждём invalid_grant/bad_verification_code)" "{\"url\":\"https://oauth.yandex.ru/token\",\"method\":\"POST\",\"headers\":{\"content-type\":\"application/x-www-form-urlencoded\"},\"body\":\"$(form "grant_type=authorization_code&code=1234567&client_id=$ID&client_secret=x")\"}"
           t "login.yandex.ru/info (без токена, ждём 401)" "{\"url\":\"https://login.yandex.ru/info?format=json\",\"method\":\"GET\",\"headers\":{}}"
+      - name: Итог (в заметки запуска)
+        if: always()
+        run: |
+          i=0; while IFS= read -r line; do i=$((i+1)); [ -n "$line" ] && echo "::notice title=$(printf '%02d' $i)::$line"; done < result.txt
