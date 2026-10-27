@@ -188,50 +188,6 @@ class _DebouncedPop extends StatefulWidget {
 class _DebouncedPopState extends State<_DebouncedPop> {
   final _opened = DateTime.now();
 
-  // Фокус пульта всегда внутри окна: пока в окне нечему принять фокус (идёт загрузка)
-  // или выбранная кнопка исчезла, стрелки уводили фокус на экран под окном.
-  FocusScopeNode? _scope;
-
-  @override
-  void initState() {
-    super.initState();
-    FocusManager.instance.addListener(_keepInside);
-    WidgetsBinding.instance.addPostFrameCallback((_) => _keepInside());
-  }
-
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    _scope = FocusScope.of(context);
-  }
-
-  @override
-  void dispose() {
-    FocusManager.instance.removeListener(_keepInside);
-    super.dispose();
-  }
-
-  bool _pending = false;
-
-  void _keepInside() {
-    if (!mounted || _pending) return;
-    _pending = true;
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      _pending = false;
-      final scope = _scope;
-      if (!mounted || scope == null || !(ModalRoute.of(context)?.isCurrent ?? false)) return;
-      final p = FocusManager.instance.primaryFocus;
-      final inside = p != null && p != scope && p.ancestors.contains(scope);
-      if (inside) return;
-      final first = scope.traversalDescendants.where((n) => n.canRequestFocus && n.context != null).firstOrNull;
-      if (first != null) {
-        first.requestFocus();
-      } else if (p != scope) {
-        scope.requestFocus();
-      }
-    });
-  }
-
   @override
   Widget build(BuildContext context) => PopScope(
         canPop: false,
@@ -240,7 +196,7 @@ class _DebouncedPopState extends State<_DebouncedPop> {
           if (DateTime.now().difference(_opened) < const Duration(milliseconds: 600)) return;
           Navigator.of(context).pop();
         },
-        child: widget.child,
+        child: FocusKeeper(child: widget.child),
       );
 }
 
