@@ -1,20 +1,20 @@
-# Плеер: выход боковой кнопкой мыши, затем подсветка под курсором
+# Плеер: выход боковой кнопкой мыши (два нажатия: спрятать панель, выйти), затем подсветка
 start DC_THEME=dark DC_SCREEN=player|/tmp/test.mkv
 wait 25
 move 800 450
 move 61 53
 shot player-hover-back
 back
-move 700 700
-move 720 720
-shot after-side-back-1
-move 61 53
-shot hover-back-again
+wait 1
 back
 wait 2
+shot after-exit
 move 780 590
 move 800 594
 shot hover-retry-button
+move 120 50
+move 104 54
+shot hover-menu-capsule
 click 104 54
 wait 2
 move 150 260
@@ -22,8 +22,3 @@ move 160 270
 shot hover-menu-item
 move 160 330
 shot hover-menu-item2
-click 160 330
-wait 2
-move 800 300
-move 820 320
-shot after-click-hover
