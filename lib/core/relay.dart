@@ -89,10 +89,18 @@ class Relay {
     return all.isEmpty ? null : all.first;
   }
 
-  /// Мост для аккаунтов: всегда первый в списке (там хранятся аккаунты), даже если
-  /// проверка картинками его забраковала — короткие ответы входа и списков проходят
-  /// и через замедленный Cloudflare.
+  /// Мост для аккаунтов — постоянный «дом» аккаунтов: встроенный мост (Cloudflare), а не
+  /// тот, что первым стоит в настройках. Иначе аккаунт оказывался то на одном мосту,
+  /// то на другом (например, на Vercel, который без VPN не открывается). Короткие ответы
+  /// входа и синхронизации проходят и через замедленный Cloudflare.
   static String? get accountBridge {
+    for (final raw in Keys.bridgeUrls) {
+      var b = raw.trim();
+      while (b.endsWith('/')) {
+        b = b.substring(0, b.length - 1);
+      }
+      if (b.isNotEmpty) return b.startsWith('http') ? b : 'https://$b';
+    }
     final all = bridges;
     return all.isEmpty ? null : all.first;
   }
@@ -136,19 +144,26 @@ class Relay {
     final test = Uri.parse('https://image.tmdb.org/t/p/w500/qJ2tW6WMUDux911r6m7haRef0WH.jpg');
     final ok = <String>{};
     await Future.wait(all.map((b) async {
+      // Короткий запрос: хватает ли моста для входа и синхронизации.
+      var small = false;
+      try {
+        final r = await http.get(Uri.parse('$b/')).timeout(const Duration(seconds: 8));
+        small = r.statusCode < 500;
+      } catch (_) {}
+      final acc = b == accountBridge ? (small ? ' · аккаунт: работает' : ' · аккаунт: нет связи') : '';
       final sw = Stopwatch()..start();
       try {
         final r = await http.get(Uri.parse('$b/p').replace(queryParameters: {'u': test.toString()})).timeout(const Duration(seconds: 9));
         if (r.statusCode == 200 && r.bodyBytes.length > 20000) {
           ok.add(b);
-          bridgeStatus[b] = 'работает (${sw.elapsedMilliseconds} мс)';
+          bridgeStatus[b] = 'работает (${sw.elapsedMilliseconds} мс)$acc';
         } else {
-          bridgeStatus[b] = 'ответ ${r.statusCode}';
+          bridgeStatus[b] = 'ответ ${r.statusCode}$acc';
         }
       } on TimeoutException {
-        bridgeStatus[b] = 'не отвечает (замедлен или заблокирован)';
+        bridgeStatus[b] = small ? 'картинки: медленно$acc' : 'не отвечает (замедлен или заблокирован)$acc';
       } catch (e) {
-        bridgeStatus[b] = 'не открывается';
+        bridgeStatus[b] = small ? 'картинки: нет$acc' : 'не открывается$acc';
       }
     }));
     // По порядку предпочтения: на первом мосту хранятся аккаунты.

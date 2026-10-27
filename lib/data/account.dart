@@ -236,7 +236,7 @@ class Account extends ChangeNotifier {
     _persist();
     notifyListeners();
     _startPeriodic();
-    await sync();
+    unawaited(sync());
   }
 
   /// Убрать аккаунт из списка на этом устройстве.
@@ -346,7 +346,8 @@ class Account extends ChangeNotifier {
     _persist();
     notifyListeners();
     _startPeriodic();
-    await sync();
+    // Вход готов сразу; синхронизация — в фоне (окно входа не ждёт медленный мост).
+    unawaited(sync());
   }
 
   // ── Вход Яндексом по QR-коду ──────────────────────────────────────
@@ -361,17 +362,33 @@ class Account extends ChangeNotifier {
   }
 
   /// Адрес для QR-кода.
-  static String qrUrl(String state) => Uri.https('oauth.yandex.ru', '/authorize', {
+  /// Мост для QR-входа: первый, который отвечает отсюда и умеет QR (он лишь передаёт
+  /// код от Яндекса в программу, аккаунты на нём не хранятся). null — ни один не доступен.
+  static Future<String?> qrBridge() async {
+    final probe = 'probe${DateTime.now().microsecondsSinceEpoch}';
+    final all = [if (Relay.accountBridge != null) Relay.accountBridge!, ...Relay.bridges];
+    final seen = <String>{};
+    for (final b in all) {
+      if (!seen.add(b)) continue;
+      try {
+        final r = await http.get(Uri.parse('$b/ya/poll?state=$probe')).timeout(const Duration(seconds: 6));
+        if (r.statusCode == 200 && _json(utf8.decode(r.bodyBytes))['pending'] == true) return b;
+      } catch (_) {}
+    }
+    return null;
+  }
+
+  static String qrUrl(String state, String bridge) => Uri.https('oauth.yandex.ru', '/authorize', {
         'response_type': 'code',
         'client_id': _clientId(AuthProvider.yandex),
-        'redirect_uri': '${Relay.accountBridge}/ya',
+        'redirect_uri': '$bridge/ya',
         'state': state,
         'device_id': instance._deviceId,
         'device_name': instance._deviceName,
       }).toString();
 
   /// Ждать, пока пользователь подтвердит вход на телефоне.
-  Future<void> waitQr(String state, {required bool Function() cancelled}) async {
+  Future<void> waitQr(String state, String bridge, {required bool Function() cancelled}) async {
     final until = DateTime.now().add(const Duration(minutes: 10));
     while (!cancelled()) {
       if (DateTime.now().isAfter(until)) throw AuthException('QR-код устарел — откройте вход заново');
@@ -379,7 +396,7 @@ class Account extends ChangeNotifier {
       if (cancelled()) return;
       Map<String, dynamic> j;
       try {
-        final r = await http.get(Uri.parse('${Relay.accountBridge}/ya/poll?state=$state')).timeout(const Duration(seconds: 15));
+        final r = await http.get(Uri.parse('$bridge/ya/poll?state=$state')).timeout(const Duration(seconds: 15));
         if (r.statusCode != 200) continue;
         j = _json(utf8.decode(r.bodyBytes));
       } catch (_) {
@@ -417,7 +434,7 @@ class Account extends ChangeNotifier {
     _persist();
     notifyListeners();
     _startPeriodic();
-    await sync();
+    unawaited(sync());
   }
 
   Future<http.Response> _tokenRequest(AuthProvider p, Map<String, String> body) => http.post(
@@ -570,7 +587,13 @@ class Account extends ChangeNotifier {
     } on AuthException catch (e) {
       syncError = e.message;
     } catch (e) {
-      syncError = 'Нет связи с сервером Deep Cinema — данные отправятся, когда связь появится';
+      final host = Uri.tryParse(Relay.accountBridge ?? '')?.host ?? 'мост';
+      final why = e is TimeoutException
+          ? '$host не ответил вовремя (замедлен или заблокирован без VPN)'
+          : '$e'.contains('Socket') || '$e'.contains('Connection') || '$e'.contains('Handshake')
+              ? 'нет соединения с $host (заблокирован без VPN?)'
+              : '$e'.replaceFirst('Exception: ', '');
+      syncError = 'Не синхронизировалось: $why. Данные отправятся, когда связь появится';
       debugPrint('sync: $e');
     } finally {
       syncing = false;
