@@ -88,7 +88,11 @@ class BridgeStore {
   Future<void> upload(String body) async {
     final fp = _fingerprint(body);
     if (fp == _lastUploaded) return;
-    final r = await http.put(Uri.parse('${Relay.bridge}/data'), headers: {'Authorization': 'Bearer $_session', 'Content-Type': 'application/json'}, body: body).timeout(const Duration(seconds: 20));
+    // Сжимаем: в России соединения с Cloudflare обрываются на больших объёмах (короткие
+    // проходят) — списки с историей без сжатия не успевали уйти. Читать «gz1:» умеют все
+    // версии с 0.3.4 (см. download).
+    final packed = body.length > 2000 ? 'gz1:${base64Encode(gzip.encode(utf8.encode(body)))}' : body;
+    final r = await http.put(Uri.parse('${Relay.bridge}/data'), headers: {'Authorization': 'Bearer $_session', 'Content-Type': 'application/json'}, body: packed).timeout(const Duration(seconds: 30));
     if (r.statusCode == 401) {
       _session = null;
       throw Exception('Мост: вход устарел');

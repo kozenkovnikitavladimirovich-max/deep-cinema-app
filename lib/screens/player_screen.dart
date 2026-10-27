@@ -352,6 +352,10 @@ class _PlayerScreenState extends State<PlayerScreen> {
         if (!mounted) return;
         setState(() => _track = t);
         _guardAudio(t);
+        // Видео-движок сам включил субтитры, а в настройках они выключены — выключаем.
+        if (t.subtitle.id != 'no' && t.subtitle.id != 'auto' && !_isTrailer && Library.instance.choiceFor(widget.item, 'subIdx', -1) == -1) {
+          _restoreTracks();
+        }
       }),
       _player.stream.completed.listen((done) {
         if (done && mounted && widget.item.isSeries && !_isTrailer && AppSettings.instance.autoNext) _nextEp();
@@ -592,15 +596,21 @@ class _PlayerScreenState extends State<PlayerScreen> {
       if (_track.subtitle.id != 'no') _player.setSubtitleTrack(SubtitleTrack.no());
     } else if (s >= 0 && s < subs.length && _track.subtitle.id != subs[s].id) {
       _player.setSubtitleTrack(subs[s]);
-    } else if (s == -1 && !_subsApplied && subs.isNotEmpty) {
+    } else if (s == -1 && subs.isNotEmpty) {
       // Выбора для этого тайтла ещё нет — субтитры по умолчанию из настроек.
-      _subsApplied = true;
       final mode = AppSettings.instance.defaultSubs;
       bool ru(String? x) => RegExp(r'ru|рус|russian', caseSensitive: false).hasMatch(x ?? '');
       final ruSub = subs.indexWhere((t) => ru(t.language) || ru(t.title));
       final audioRu = ru(_track.audio.language) || ru(_track.audio.title) || (audios.length <= 1 && _track.audio.language == null);
       final want = switch (mode) { 'Русские' => true, 'Только с оригиналом' => !audioRu, _ => false };
-      if (want && ruSub >= 0 && _track.subtitle.id != subs[ruSub].id) _player.setSubtitleTrack(subs[ruSub]);
+      if (want) {
+        if (!_subsApplied && ruSub >= 0 && _track.subtitle.id != subs[ruSub].id) _player.setSubtitleTrack(subs[ruSub]);
+        _subsApplied = true;
+      } else if (_track.subtitle.id != 'no') {
+        // Субтитры выключены в настройках: видео-движок сам включал дорожку, отмеченную
+        // в файле «по умолчанию», — выключаем (и снова, если он включит её при переоткрытии).
+        _player.setSubtitleTrack(SubtitleTrack.no());
+      }
     }
   }
 
@@ -1462,7 +1472,8 @@ class _PlayerScreenState extends State<PlayerScreen> {
     return Row(children: [
       // На ТВ «Назад» — кнопкой пульта, отдельная кнопка на экране не нужна.
       if (!Platform.isAndroid) ...[
-        _roundBtn(Icons.chevron_left_rounded, 'Назад', () => Navigator.of(context).maybePop(), size: 50),
+        // Кнопка на экране сразу закрывает плеер (maybePop при видимой панели только прятал её).
+        _roundBtn(Icons.chevron_left_rounded, 'Назад', () => Navigator.of(context).pop(), size: 50),
         const SizedBox(width: 14),
       ],
       if (_source != null && !_isTrailer)

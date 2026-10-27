@@ -1,3 +1,5 @@
+import 'dart:io' show Platform;
+
 import 'dart:ui' show ImageFilter;
 
 import 'package:flutter/material.dart';
@@ -63,6 +65,14 @@ class Pill extends StatelessWidget {
   }
 }
 
+bool get _isTv {
+  try {
+    return Platform.isAndroid;
+  } catch (_) {
+    return false;
+  }
+}
+
 class _PillBody extends StatelessWidget {
   const _PillBody({required this.label, this.icon, required this.primary, required this.selected, required this.height, this.trailing});
   final String label;
@@ -76,11 +86,15 @@ class _PillBody extends StatelessWidget {
   Widget build(BuildContext context) {
     final c = context.dc;
     final focused = FocusFlag.of(context);
-    final white = primary || focused;
+    // На ТВ белой горит только кнопка под фокусом пульта: главная кнопка без фокуса —
+    // лишь светлее остальных (иначе в окне светились сразу две белые кнопки).
+    final tv = _isTv;
+    final white = focused || (primary && !tv);
+    final soft = selected || (primary && tv);
     final dark = Theme.of(context).brightness == Brightness.dark;
     final Color bg = white
         ? c.btnBg
-        : selected
+        : soft
             ? (dark ? const Color(0x59FFFFFF) : const Color(0x2E000000))
             : matteFor(context);
     final fg = white ? c.btnText : c.text;
@@ -89,7 +103,7 @@ class _PillBody extends StatelessWidget {
       height: height,
       padding: EdgeInsets.symmetric(horizontal: height * .44),
       decoration: BoxDecoration(
-        color: AppSettings.instance.liteGlass && !white && !selected ? Color.alphaBlend(bg, c.bg) : bg,
+        color: AppSettings.instance.liteGlass && !white && !soft ? Color.alphaBlend(bg, c.bg) : bg,
         borderRadius: BorderRadius.circular(height / 2),
         border: Border.all(color: white ? Colors.transparent : c.stroke),
       ),
@@ -105,7 +119,7 @@ class _PillBody extends StatelessWidget {
         ],
       ),
     );
-    if (white || selected || AppSettings.instance.liteGlass) return body;
+    if (white || soft || AppSettings.instance.liteGlass) return body;
     return ClipRRect(
       borderRadius: BorderRadius.circular(height / 2),
       child: BackdropFilter(filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20), child: body),
@@ -454,18 +468,31 @@ class _ShelfRowState extends State<ShelfRow> {
   /// Стрелка у края полки (мышь): небольшая круглая кнопка в поле слева/справа от
   /// карточек — ничего не перекрывает и не затемняет.
   Widget _edge(int dir) {
-    final c = context.dc;
+    final dark = Theme.of(context).brightness == Brightness.dark;
     final left = dir < 0;
-    return Center(
-      child: MouseRegion(
-        cursor: SystemMouseCursors.click,
-        child: GestureDetector(
-          onTap: () => _page(dir),
-          child: Container(
-            width: 44,
-            height: 44,
-            decoration: BoxDecoration(color: c.glassStrong, shape: BoxShape.circle, border: Border.all(color: c.stroke)),
-            child: Icon(left ? Icons.chevron_left_rounded : Icons.chevron_right_rounded, color: c.text, size: 28),
+    // Мягкая тень у края полки: прозрачный переход в тёмный (в светлой теме — в светлый),
+    // без «серой плашки» поверх фона. Стрелка — белая с лёгкой тенью, читается на любой карточке.
+    final shade = dark ? const Color(0xFF000000) : const Color(0xFFFFFFFF);
+    return MouseRegion(
+      cursor: SystemMouseCursors.click,
+      child: GestureDetector(
+        onTap: () => _page(dir),
+        child: Container(
+          width: 96,
+          alignment: left ? const Alignment(-.35, 0) : const Alignment(.35, 0),
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: left ? Alignment.centerLeft : Alignment.centerRight,
+              end: left ? Alignment.centerRight : Alignment.centerLeft,
+              colors: [shade.withValues(alpha: dark ? .62 : .7), shade.withValues(alpha: dark ? .3 : .35), shade.withValues(alpha: 0)],
+              stops: const [0, .45, 1],
+            ),
+          ),
+          child: Icon(
+            left ? Icons.chevron_left_rounded : Icons.chevron_right_rounded,
+            color: dark ? Colors.white : const Color(0xFF1C1C1E),
+            size: 40,
+            shadows: [Shadow(color: dark ? const Color(0x99000000) : const Color(0x66FFFFFF), blurRadius: 12)],
           ),
         ),
       ),
@@ -578,8 +605,8 @@ class _ShelfRowState extends State<ShelfRow> {
                   ),
                 ),
                 if (_hover && WindowService.isDesktop && _clearOfTopBar) ...[
-                  if (_canLeft) Positioned(left: 16, top: 18, bottom: 18, child: _edge(-1)),
-                  if (_canRight) Positioned(right: 16, top: 18, bottom: 18, child: _edge(1)),
+                  if (_canLeft) Positioned(left: 0, top: 18, bottom: 18, child: _edge(-1)),
+                  if (_canRight) Positioned(right: 0, top: 18, bottom: 18, child: _edge(1)),
                 ],
               ]),
             ),

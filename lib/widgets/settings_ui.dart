@@ -281,8 +281,10 @@ class FieldNav extends StatelessWidget {
   Widget build(BuildContext context) {
     Widget w = Shortcuts(
       shortcuts: const {
-        SingleActivator(LogicalKeyboardKey.arrowDown): DirectionalFocusIntent(TraversalDirection.down),
-        SingleActivator(LogicalKeyboardKey.arrowUp): DirectionalFocusIntent(TraversalDirection.up),
+        // ignoreTextFields: false — иначе поле само «съедает» стрелку и фокус не уходит
+        // (на ТВ нельзя было спуститься ниже поля поиска трекеров).
+        SingleActivator(LogicalKeyboardKey.arrowDown): DirectionalFocusIntent(TraversalDirection.down, ignoreTextFields: false),
+        SingleActivator(LogicalKeyboardKey.arrowUp): DirectionalFocusIntent(TraversalDirection.up, ignoreTextFields: false),
       },
       child: child,
     );

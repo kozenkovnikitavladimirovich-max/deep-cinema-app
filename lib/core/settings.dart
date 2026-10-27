@@ -83,6 +83,12 @@ class AppSettings extends ChangeNotifier {
     final p = _prefs!;
     // На ТВ по умолчанию тёмная тема (в светлой на слабой приставке заметнее мерцание).
     themeMode = ThemeMode.values[p.getInt('themeMode') ?? (Platform.isAndroid ? ThemeMode.dark : ThemeMode.system).index];
+    // Раньше тема приходила с аккаунта (с ПК) — на ТВ один раз возвращаем тёмную по умолчанию.
+    if (Platform.isAndroid && p.getBool('themeLocal') != true) {
+      themeMode = ThemeMode.dark;
+      p.setInt('themeMode', ThemeMode.dark.index);
+      p.setBool('themeLocal', true);
+    }
     try {
       final t = Platform.environment['DC_THEME'];
       if (t == 'light') themeMode = ThemeMode.light;
@@ -304,7 +310,7 @@ class AppSettings extends ChangeNotifier {
   int prefsAt = 0;
 
   void _touch(String key) {
-    if (!_syncedStrings.contains(key) && !_syncedBools.contains(key) && key != 'themeMode') return;
+    if (!_syncedStrings.contains(key) && !_syncedBools.contains(key)) return;
     prefsAt = DateTime.now().millisecondsSinceEpoch;
     _prefs?.setInt('prefsAt', prefsAt);
   }
@@ -312,7 +318,7 @@ class AppSettings extends ChangeNotifier {
   Map<String, dynamic> exportSynced() => {
         for (final k in _syncedStrings) k: k == 'defaultDub' || k == 'defaultSubs' || k == 'trailerSource' ? _str(k) : service(k),
         for (final k in _syncedBools) k: getBool(k),
-        'themeMode': themeMode.index,
+        // Тема не переезжает: у каждого устройства своя (на ТВ по умолчанию тёмная).
       };
 
   String _str(String k) => switch (k) { 'defaultDub' => defaultDub, 'defaultSubs' => defaultSubs, _ => trailerSource };
@@ -348,11 +354,6 @@ class AppSettings extends ChangeNotifier {
         setBool(k, v);
         prefsAt = keep;
       }
-    }
-    final t = m['themeMode'];
-    if (t is int && t >= 0 && t < ThemeMode.values.length) {
-      themeMode = ThemeMode.values[t];
-      _prefs?.setInt('themeMode', t);
     }
     prefsAt = at;
     _prefs?.setInt('prefsAt', at);

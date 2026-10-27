@@ -194,39 +194,66 @@ class Updater extends ChangeNotifier {
     notifyListeners();
     final client = HttpClient()..connectionTimeout = const Duration(seconds: 20);
     try {
-      // Файл релиза закрытого репозитория: сначала GitHub с ключом, затем — по выданной им прямой ссылке без ключа.
-      final req = await client.getUrl(Uri.parse('https://api.github.com/repos/$_repo/releases/assets/${u.assetId}'));
-      req.followRedirects = false;
-      _headers.forEach(req.headers.set);
-      req.headers.set('Accept', 'application/octet-stream');
-      var res = await req.close();
-      if (res.isRedirect || res.statusCode == 302 || res.statusCode == 301) {
-        final loc = res.headers.value('location');
-        await res.drain<void>();
-        if (loc == null) throw Exception('нет ссылки на файл');
-        final r2 = await client.getUrl(Uri.parse(loc));
-        r2.headers.set('User-Agent', 'DeepCinema');
-        res = await r2.close();
-      }
-      if (res.statusCode != 200) throw Exception('скачивание: ${res.statusCode}');
-      final total = res.contentLength > 0 ? res.contentLength : u.size;
       final dir = await getTemporaryDirectory();
       final file = File('${dir.path}${Platform.pathSeparator}${u.assetName}');
-      final sink = file.openWrite();
+      if (await file.exists()) await file.delete();
       var got = 0;
-      var lastNotify = DateTime.now();
-      await for (final chunk in res) {
-        sink.add(chunk);
-        got += chunk.length;
-        if (total > 0 && DateTime.now().difference(lastNotify).inMilliseconds > 120) {
-          progress = (got / total).clamp(0.0, 1.0);
-          lastNotify = DateTime.now();
-          notifyListeners();
+      var total = u.size;
+      String? direct; // прямая ссылка на файл (её выдаёт GitHub), чтобы докачивать
+      Object? lastError;
+      // Несколько попыток с докачкой: на ТВ связь с хранилищем GitHub иногда рвётся
+      // посреди файла (91 МБ) — тогда продолжаем с того же места, а не с нуля.
+      for (var attempt = 0; attempt < 4; attempt++) {
+        if (attempt > 0) await Future<void>.delayed(Duration(seconds: 2 * attempt));
+        try {
+          HttpClientResponse res;
+          if (direct == null) {
+            // Файл релиза: сначала GitHub (с ключом, если репозиторий закрытый), затем — по выданной им прямой ссылке.
+            final req = await client.getUrl(Uri.parse('https://api.github.com/repos/$_repo/releases/assets/${u.assetId}'));
+            req.followRedirects = false;
+            _headers.forEach(req.headers.set);
+            req.headers.set('Accept', 'application/octet-stream');
+            res = await req.close().timeout(const Duration(seconds: 30));
+            if (res.isRedirect || res.statusCode == 302 || res.statusCode == 301) {
+              direct = res.headers.value('location');
+              await res.drain<void>();
+              if (direct == null) throw Exception('нет ссылки на файл');
+              res = await _open(client, direct, got);
+            }
+          } else {
+            res = await _open(client, direct, got);
+          }
+          if (res.statusCode == 200) {
+            got = 0; // сервер отдаёт файл целиком — пишем заново
+          } else if (res.statusCode != 206) {
+            throw Exception('скачивание: ${res.statusCode}');
+          }
+          if (res.statusCode == 200 && res.contentLength > 0) total = res.contentLength;
+          final sink = file.openWrite(mode: got == 0 ? FileMode.write : FileMode.append);
+          var lastNotify = DateTime.now();
+          try {
+            await for (final chunk in res.timeout(const Duration(seconds: 30))) {
+              sink.add(chunk);
+              got += chunk.length;
+              if (total > 0 && DateTime.now().difference(lastNotify).inMilliseconds > 120) {
+                progress = (got / total).clamp(0.0, 1.0);
+                lastNotify = DateTime.now();
+                notifyListeners();
+              }
+            }
+          } finally {
+            await sink.flush();
+            await sink.close();
+          }
+          if (total > 0 && got < total) throw Exception('файл скачался не полностью');
+          lastError = null;
+          break;
+        } catch (e) {
+          lastError = e;
+          debugPrint('update download (попытка ${attempt + 1}): $e');
         }
       }
-      await sink.flush();
-      await sink.close();
-      if (total > 0 && got < total) throw Exception('файл скачался не полностью — попробуйте ещё раз');
+      if (lastError != null) throw _human(lastError);
       progress = 1;
       stage = UpdateStage.installing;
       notifyListeners();
@@ -258,11 +285,30 @@ class Updater extends ChangeNotifier {
       }
     } catch (e) {
       stage = UpdateStage.failed;
-      error = 'Не удалось обновиться: $e';
+      error = 'Не удалось обновиться: ${'$e'.replaceFirst('Exception: ', '')}';
       notifyListeners();
     } finally {
       client.close();
     }
+  }
+
+  /// Открыть прямую ссылку на файл, начиная с байта [from] (докачка).
+  static Future<HttpClientResponse> _open(HttpClient client, String url, int from) async {
+    final r = await client.getUrl(Uri.parse(url));
+    r.headers.set('User-Agent', 'DeepCinema');
+    if (from > 0) r.headers.set('Range', 'bytes=$from-');
+    return r.close().timeout(const Duration(seconds: 30));
+  }
+
+  /// Понятный текст ошибки скачивания (с адресом, до которого не достучались).
+  static Exception _human(Object e) {
+    if (e is SocketException) {
+      final host = e.address?.host ?? '';
+      return Exception('нет связи с сервером${host.isNotEmpty ? ' $host' : ''} (${e.osError?.message ?? e.message}). '
+          'Если интернет на ТВ работает — перезагрузите роутер или скачайте APK с компьютера');
+    }
+    if (e is TimeoutException) return Exception('сервер GitHub не отвечает — попробуйте позже');
+    return Exception('$e'.replaceFirst('Exception: ', ''));
   }
 
   /// Уборка: скачанные раньше установщики и apk больше не нужны (по сотне МБ каждый).
