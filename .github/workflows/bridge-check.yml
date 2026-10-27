@@ -1,0 +1,41 @@
+name: Проверка моста
+# Запуск вручную. Проверяет, что мост Cloudflare отвечает и через /t достаёт до серверов
+# входа Яндекса (как это делает телевизор). Приложение не собирает.
+on: workflow_dispatch
+permissions:
+  contents: read
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Проверка
+        run: |
+          B=https://deep-cinema.kozenkov-nikita-vladimirovich.workers.dev
+          ID=8bdd4fd94d2b435eb58d03130cd9998d
+          echo "== Мост"
+          curl -sS -m 20 -w '  [%{http_code} за %{time_total}s]\n' $B/
+          echo "== Мост → /ya/poll (должно быть pending)"
+          curl -sS -m 20 -w '  [%{http_code} за %{time_total}s]\n' "$B/ya/poll?state=checkcheckcheckcheck"
+          t() {
+            echo "== Мост /t → $1"
+            curl -sS -m 40 -X POST $B/t -H 'x-dc-key: dc-trackers-v1' -H 'content-type: application/json' -d "$2" \
+              -w '\n  [%{http_code} за %{time_total}s]\n' -o out.json || true
+            python3 - <<'EOF'
+          import json, base64
+          try:
+              j = json.load(open('out.json'))
+          except Exception as e:
+              print('  не JSON:', open('out.json').read()[:300]); raise SystemExit
+          if j.get('error'): print('  ошибка моста:', j['error']); raise SystemExit
+          b = base64.b64decode(j.get('body', '')).decode('utf-8', 'replace')
+          # не печатаем коды и токены — только поля ошибки и наличие ключей
+          try:
+              d = json.loads(b); print('  статус', j.get('status'), '| поля:', sorted(d.keys()), '| ошибка:', d.get('error'), d.get('error_description'))
+          except Exception:
+              print('  статус', j.get('status'), '| тело:', b[:200])
+          EOF
+          }
+          form() { printf '%s' "$1" | base64 -w0; }
+          t "oauth.yandex.ru/device/code" "{\"url\":\"https://oauth.yandex.ru/device/code\",\"method\":\"POST\",\"headers\":{\"content-type\":\"application/x-www-form-urlencoded\"},\"body\":\"$(form "client_id=$ID&device_id=bridgecheck01&device_name=check")\"}"
+          t "oauth.yandex.ru/token (неверный код, ждём invalid_grant/bad_verification_code)" "{\"url\":\"https://oauth.yandex.ru/token\",\"method\":\"POST\",\"headers\":{\"content-type\":\"application/x-www-form-urlencoded\"},\"body\":\"$(form "grant_type=authorization_code&code=1234567&client_id=$ID&client_secret=x")\"}"
+          t "login.yandex.ru/info (без токена, ждём 401)" "{\"url\":\"https://login.yandex.ru/info?format=json\",\"method\":\"GET\",\"headers\":{}}"
