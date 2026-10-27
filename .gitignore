@@ -1,0 +1,24 @@
+# Flutter / Dart
+.dart_tool/
+.packages
+.pub-cache/
+.pub/
+build/
+.flutter-plugins
+.flutter-plugins-dependencies
+pubspec.lock
+
+# Платформенные папки генерируются в облачной сборке (flutter create)
+/android/
+/windows/
+/ios/
+/linux/
+/macos/
+/web/
+
+# IDE
+.idea/
+.vscode/
+*.iml
+.DS_Store
+tool/assets/signing.keystore

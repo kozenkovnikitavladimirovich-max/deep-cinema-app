@@ -1,0 +1,256 @@
+name: Сборка Deep Cinema
+
+on:
+  push:
+    branches: [main]
+    paths-ignore: ['design/**', 'README.md', '.github/workflows/screens.yml', '.github/workflows/build.yml', 'presets/**/README.md', 'tool/bridge/**']
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: build-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  # Открытый репозиторий: версии продолжаются после 0.2.x (0.3.N), а код версии
+  # для Android — больше прежних, чтобы обновление ставилось поверх.
+  VERSION: 0.3.${{ github.run_number }}
+
+jobs:
+  # Черновик релиза: сборки кладут файлы прямо в него (без временного хранилища Actions,
+  # у которого маленький бесплатный лимит).
+  prepare:
+    name: Черновик релиза
+    runs-on: ubuntu-latest
+    env:
+      GH_TOKEN: ${{ github.token }}
+      GH_REPO: ${{ github.repository }}
+      NOTES: ${{ github.event.head_commit.message }}
+    steps:
+      - name: Создать черновик
+        run: |
+          for t in $(gh api "repos/$GH_REPO/releases?per_page=100" --jq '.[]|select(.draft)|.id'); do
+            gh api -X DELETE "repos/$GH_REPO/releases/$t" || true
+          done
+          printf '%s\n\n• Windows: скачайте и запустите DeepCinema-Setup-%s.exe (или архив без установки).\n• Android TV: установите DeepCinema-%s.apk.\n' "$NOTES" "$VERSION" "$VERSION" > notes.md
+          gh release create "v$VERSION" --draft --target "$GITHUB_SHA" --title "Deep Cinema $VERSION" --notes-file notes.md
+
+  android:
+    name: Android TV (.apk)
+    needs: prepare
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: zulu
+          java-version: '17'
+
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+
+      - name: Платформенные файлы
+        run: |
+          set -o pipefail
+          { flutter create . --project-name deep_cinema --org app.deepcinema --platforms=android && python3 tool/patch_platforms.py android; } 2>&1 | tee -a build.log
+
+      - name: Торрент-движок для Android (TorrServer)
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set +e
+          gh api repos/YouROK/TorrServer/releases/latest > ts.json
+          pick() { jq -r --arg re "$1" '[.assets[] | select(.name|test($re;"i"))][0].browser_download_url // empty' ts.json; }
+          A64=$(pick 'android.*arm64'); A7=$(pick 'android.*arm(v)?7')
+          echo "arm64: $A64"; echo "arm7: $A7"
+          mkdir -p android/app/src/main/jniLibs/arm64-v8a android/app/src/main/jniLibs/armeabi-v7a
+          [ -n "$A64" ] && curl -fsSL "$A64" -o android/app/src/main/jniLibs/arm64-v8a/libtorrserver.so
+          [ -n "$A7" ] && curl -fsSL "$A7" -o android/app/src/main/jniLibs/armeabi-v7a/libtorrserver.so
+          ls -la android/app/src/main/jniLibs/*/ || true
+          if [ -z "$A64" ]; then echo "::warning::TorrServer для Android не скачан — сборка без встроенного движка"; fi
+          exit 0
+
+      - name: Каталог трекеров для встроенного поиска
+        run: python3 tool/build_tracker_catalog.py || true
+
+      - name: Зависимости и проверка кода
+        run: |
+          set -o pipefail
+          { flutter pub get && flutter analyze --no-fatal-infos --no-fatal-warnings; } 2>&1 | tee -a build.log | tee analyze.txt
+          # Предупреждения анализатора — в аннотацию, чтобы их было видно без логов.
+          W=$(grep -E "(warning|error) •" analyze.txt | head -40 | sed ':a;N;$!ba;s/%/%25/g;s/\r//g;s/\n/%0A/g' || true)
+          if [ -n "$W" ]; then echo "::warning title=Анализатор::$W"; fi
+
+      - name: Единый ключ подписи (из секрета репозитория — в коде его нет)
+        env:
+          KEYSTORE_B64: ${{ secrets.ANDROID_KEYSTORE_B64 }}
+        run: |
+          if [ -z "$KEYSTORE_B64" ]; then echo "::error title=Подпись::Нет секрета ANDROID_KEYSTORE_B64 (Settings → Secrets and variables → Actions)"; exit 1; fi
+          echo "$KEYSTORE_B64" | base64 -d > tool/assets/signing.keystore
+
+      - name: Сборка APK
+        run: |
+          set -o pipefail
+          flutter build apk --release --build-name=$VERSION --build-number=$((1000 + ${{ github.run_number }})) --dart-define=APP_VERSION=$VERSION 2>&1 | tee -a build.log
+
+      - name: Переименование
+        run: cp build/app/outputs/flutter-apk/app-release.apk DeepCinema-$VERSION.apk
+
+      - name: Проверка подписи (обновления должны вставать поверх)
+        run: python3 tool/check_apk_sign.py DeepCinema-$VERSION.apk tool/assets/signing.keystore
+
+      - name: Показать ошибку
+        if: failure()
+        run: echo "::error title=Android::$(tail -n 60 build.log | sed ':a;N;$!ba;s/%/%25/g;s/\r//g;s/\n/%0A/g')"
+
+      - name: В черновик релиза
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: gh release upload "v$VERSION" DeepCinema-*.apk --clobber
+
+  windows:
+    name: Windows (.exe)
+    needs: prepare
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+
+      - name: Платформенные файлы
+        shell: bash
+        env:
+          PYTHONIOENCODING: utf-8
+        run: |
+          set -o pipefail
+          { flutter create . --project-name deep_cinema --org app.deepcinema --platforms=windows && python tool/patch_platforms.py windows; } 2>&1 | tee -a build.log
+
+      - name: Каталог трекеров для встроенного поиска
+        shell: bash
+        run: python tool/build_tracker_catalog.py || true
+
+      - name: Сборка
+        shell: bash
+        run: |
+          set -o pipefail
+          { flutter pub get && flutter build windows --release --build-name=$VERSION --build-number=$((1000 + ${{ github.run_number }})) --dart-define=APP_VERSION=$VERSION; } 2>&1 | tee -a build.log
+
+      - name: Торрент-движок для Windows (TorrServer)
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set +e
+          gh api repos/YouROK/TorrServer/releases/latest > ts.json
+          URL=$(jq -r '[.assets[] | select(.name|test("windows.*(amd64|x64).*\\.exe$";"i"))][0].browser_download_url // empty' ts.json)
+          echo "windows: $URL"
+          [ -n "$URL" ] && curl -fsSL "$URL" -o torrserver.exe
+          if [ ! -f torrserver.exe ]; then echo "::warning::TorrServer для Windows не скачан"; fi
+          exit 0
+
+      - name: Агрегатор раздач для Windows (Jackett)
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set +e
+          gh api repos/Jackett/Jackett/releases/latest > jk.json
+          URL=$(jq -r '[.assets[] | select(.name=="Jackett.Binaries.Windows.zip")][0].browser_download_url // empty' jk.json)
+          echo "jackett: $URL"
+          [ -n "$URL" ] && curl -fsSL "$URL" -o jackett.zip && 7z x -y -ojk jackett.zip > /dev/null
+          if [ ! -f jk/Jackett/JackettConsole.exe ]; then echo "::warning::Jackett для Windows не скачан"; fi
+          exit 0
+
+      - name: Помощник для трекеров с проверкой «вы не робот» (FlareSolverr)
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set +e
+          gh api repos/FlareSolverr/FlareSolverr/releases/latest > fs.json
+          URL=$(jq -r '[.assets[] | select(.name|test("windows.*x64.*\\.zip$";"i"))][0].browser_download_url // empty' fs.json)
+          echo "flaresolverr: $URL"
+          [ -n "$URL" ] && curl -fsSL "$URL" -o fs.zip && 7z x -y -ofs fs.zip > /dev/null
+          F=$(find fs -iname flaresolverr.exe | head -1)
+          if [ -z "$F" ]; then echo "::warning::FlareSolverr для Windows не скачан"; exit 0; fi
+          mv "$(dirname "$F")" flaresolverr_dir
+          echo "flaresolverr-$(jq -r .tag_name fs.json)" > helper.txt
+          exit 0
+
+      - name: Упаковка
+        shell: pwsh
+        run: |
+          $out = "DeepCinema"
+          Copy-Item -Recurse build/windows/x64/runner/Release $out
+          Rename-Item "$out/deep_cinema.exe" "Deep Cinema.exe"
+          if (Test-Path torrserver.exe) { Copy-Item torrserver.exe "$out/torrserver.exe" }
+          if (Test-Path jk/Jackett) { Copy-Item -Recurse jk/Jackett "$out/jackett" }
+          if (Test-Path flaresolverr_dir) { Copy-Item -Recurse flaresolverr_dir "$out/flaresolverr" }
+          # Свои трекеры (файлы настроек Jackett), если положены в presets/jackett/Indexers.
+          if (Test-Path presets/jackett/Indexers) {
+            New-Item -ItemType Directory -Force "$out/jackett-preset" | Out-Null
+            Copy-Item -Recurse presets/jackett/Indexers "$out/jackett-preset/Indexers"
+          }
+          # Версии тяжёлых компонентов: если они не менялись, обновление скачивает только саму программу.
+          $ts = if (Test-Path ts.json) { (Get-Content ts.json -Raw | ConvertFrom-Json).tag_name } else { '-' }
+          $jk = if (Test-Path jk.json) { (Get-Content jk.json -Raw | ConvertFrom-Json).tag_name } else { '-' }
+          $hp = if (Test-Path helper.txt) { (Get-Content helper.txt -Raw).Trim() } else { '-' }
+          "torrserver=$ts`njackett=$jk`nhelper=$hp" | Set-Content -Encoding utf8 "$out/components.txt"
+          Copy-Item "$out/components.txt" "DeepCinema-components.txt"
+          Compress-Archive -Path "$out/*" -DestinationPath "DeepCinema-$env:VERSION-windows.zip"
+
+      - name: Установщик
+        shell: pwsh
+        run: |
+          $iscc = "${env:ProgramFiles(x86)}\Inno Setup 6\ISCC.exe"
+          # Свежая версия — для тёмного оформления мастера установки.
+          choco upgrade innosetup -y --no-progress | Out-Null
+          $o = & $iscc /Q "/DAppVersion=$env:VERSION" "/DSourceDir=..\DeepCinema" installer\deepcinema.iss 2>&1
+          if ($LASTEXITCODE -ne 0) {
+            $msg = ($o | Select-Object -Last 15) -join ' | '
+            Write-Output "::error title=Установщик::$msg"
+            exit 1
+          }
+          # Лёгкое обновление: только программа (без торрент-движка, агрегатора и помощника).
+          $o = & $iscc /Q "/DAppVersion=$env:VERSION" "/DSourceDir=..\DeepCinema" "/DLite=1" installer\deepcinema.iss 2>&1
+          if ($LASTEXITCODE -ne 0) {
+            $msg = ($o | Select-Object -Last 15) -join ' | '
+            Write-Output "::error title=Лёгкое обновление::$msg"
+            exit 1
+          }
+          Copy-Item dist\DeepCinema-Setup-*.exe .
+          Copy-Item dist\DeepCinema-Update-*.exe .
+          Get-ChildItem DeepCinema-Setup-*.exe, DeepCinema-Update-*.exe
+
+      - name: Показать ошибку
+        if: failure()
+        shell: bash
+        run: echo "::error title=Windows::$(tail -n 60 build.log | sed ':a;N;$!ba;s/%/%25/g;s/\r//g;s/\n/%0A/g')"
+
+      - name: В черновик релиза
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: gh release upload "v$VERSION" DeepCinema-*-windows.zip DeepCinema-Setup-*.exe DeepCinema-Update-*.exe DeepCinema-components.txt --clobber
+
+  release:
+    name: Публикация релиза
+    needs: [android, windows]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Опубликовать
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          gh release edit "v$VERSION" --draft=false --latest

@@ -1,0 +1,136 @@
+name: Скриншоты интерфейса
+
+# Собирает приложение под Linux, запускает на виртуальном экране и снимает
+# основные экраны. Картинки кладутся в ветку `shots` — для проверки дизайна.
+on:
+  workflow_dispatch:
+    inputs:
+      ref:
+        description: 'Ветка для снимков'
+        default: main
+      tmdb:
+        description: 'Ключ TMDB для снимков'
+        default: ''
+      kp:
+        description: 'Ключ Кинопоиска для снимков'
+        default: ''
+  push:
+    branches: [shots-request]
+
+permissions:
+  contents: write
+
+concurrency:
+  group: screens
+  cancel-in-progress: true
+
+jobs:
+  shots:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.ref || 'main' }}
+
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+
+      - name: Пакеты для Linux-сборки
+        run: |
+          for i in 1 2 3; do
+            sudo timeout 300 apt-get -o Acquire::Retries=3 -o Acquire::http::Timeout=20 update -y && \
+            sudo timeout 600 apt-get -o Acquire::Retries=3 -o Acquire::http::Timeout=20 install -y clang cmake ninja-build pkg-config libgtk-3-dev libmpv-dev mpv xvfb imagemagick xdotool libayatana-appindicator3-dev ffmpeg && break
+            echo "повтор $i"; sleep 10
+          done
+
+      - name: Сборка
+        run: |
+          set -o pipefail
+          flutter create . --project-name deep_cinema --org app.deepcinema --platforms=linux 2>&1 | tail -3
+          # Старые плагины используют устаревшие функции — не считаем это ошибкой.
+          sed -i 's/-Werror//g' linux/CMakeLists.txt
+          flutter pub get
+          flutter analyze --no-fatal-infos --no-fatal-warnings > analyze.log 2>&1 || true
+          grep -E "^ *(warning|error)" analyze.log | head -40 | while read -r l; do echo "::warning title=analyze::$l"; done || true
+          flutter build linux --release > build.log 2>&1 || { echo "::error title=Linux::$(tail -n 40 build.log | sed ':a;N;$!ba;s/%/%25/g;s/\r//g;s/\n/%0A/g')"; exit 1; }
+
+      - name: Снимки экранов
+        env:
+          DC_TMDB_KEY: ${{ inputs.tmdb }}
+          DC_KP_KEY: ${{ inputs.kp }}
+        run: |
+          set +e
+          mkdir -p shots
+          APP=build/linux/x64/release/bundle/deep_cinema
+          Xvfb :99 -screen 0 1600x900x24 &
+          export DISPLAY=:99
+          sleep 2
+          # Тестовое видео: две дорожки звука, чтобы было что выбирать.
+          ffmpeg -loglevel error -f lavfi -i "testsrc2=size=1280x720:rate=25" -f lavfi -i "sine=frequency=440" -f lavfi -i "sine=frequency=660" -t 120 -map 0 -map 1 -map 2 -c:v libx264 -preset ultrafast -c:a aac -metadata:s:a:0 title="Дубляж" -metadata:s:a:0 language=rus -metadata:s:a:1 title="Original" -metadata:s:a:1 language=eng "$PWD/test.mkv"
+          VIDEO="$PWD/test.mkv"
+          KEYS=""
+          shot() { # имя, ожидание, переменные окружения…
+            name=$1; wait=$2; shift 2
+            xdotool mousemove 1599 899
+            env "$@" $APP > "shots/$name.log" 2>&1 &
+            pid=$!
+            sleep 1; xdotool mousemove 1599 899; sleep 1; xdotool mousemove 1599 899
+            sleep $wait
+            if [ -n "$KEYS" ]; then xdotool key --delay 700 $KEYS; sleep 5; fi
+            import -window root "shots/$name.png"
+            kill $pid 2>/dev/null; sleep 1; kill -9 $pid 2>/dev/null
+            echo "снят $name"
+          }
+          shot 01-home 28 DC_THEME=dark
+          shot 02-menu 30 DC_THEME=dark DC_SCREEN=menu
+          shot 03-details-movie 32 DC_THEME=dark "DC_SCREEN=details|movie:693134|Дюна: Часть вторая"
+          shot 04-details-series 32 DC_THEME=dark "DC_SCREEN=details|tv:1396|Во все тяжкие"
+          shot 05-films 30 DC_THEME=dark DC_SCREEN=films
+          shot 06-search 26 DC_THEME=dark DC_SCREEN=search
+          shot 07-settings 24 DC_THEME=dark DC_SCREEN=settings
+          shot 08-account 24 DC_THEME=dark DC_SCREEN=account
+          shot 09-sources 26 DC_THEME=dark "DC_SCREEN=sources|movie:693134|Дюна: Часть вторая"
+          shot 10-player 30 DC_THEME=dark "DC_SCREEN=player|$VIDEO" DC_PANEL=audio
+          shot 11-player-info 30 DC_THEME=dark "DC_SCREEN=player|$VIDEO" DC_PANEL=info
+          shot 12-home-light 28 DC_THEME=light
+          shot 13-settings-light 24 DC_THEME=light DC_SCREEN=settings
+          shot 14-account-light 24 DC_THEME=light DC_SCREEN=account
+          KEYS="Down Down Right Right" shot 15-home-focus 28 DC_THEME=dark
+          KEYS="Down Down" shot 16-details-scrolled 32 DC_THEME=dark "DC_SCREEN=details|movie:693134|Дюна: Часть вторая"
+          KEYS="Left" shot 17-home-left-menu 28 DC_THEME=dark
+          KEYS="Down Down Down" shot 18-settings-focus 24 DC_THEME=dark DC_SCREEN=settings
+          KEYS="Return" shot 19-settings-section 24 DC_THEME=dark DC_SCREEN=settings
+          KEYS="Down Down Return" shot 19b-settings-search 24 DC_THEME=dark DC_SCREEN=settings
+          KEYS="Return Return" shot 19c-settings-theme 24 DC_THEME=light DC_SCREEN=settings
+          KEYS="Return" shot 20-login-dialog 30 DC_THEME=dark DC_SCREEN=account
+          KEYS="Down Return" shot 20b-email-dialog 24 DC_THEME=dark DC_SCREEN=account
+          KEYS="Down Down Return" shot 20c-account-my 24 DC_THEME=dark DC_SCREEN=account
+          shot 21-narrow-home 28 DC_THEME=dark DC_WINDOW=1000x620
+          shot 22-narrow-details 32 DC_THEME=dark DC_WINDOW=900x560 "DC_SCREEN=details|movie:693134|Дюна: Часть вторая"
+          KEYS="Down Down" shot 23-narrow-details-scrolled 32 DC_THEME=light DC_WINDOW=900x560 "DC_SCREEN=details|movie:693134|Дюна: Часть вторая"
+          shot 24-narrow-settings 24 DC_THEME=dark DC_WINDOW=900x560 DC_SCREEN=settings
+          KEYS="Down Down" shot 25-narrow-player 32 DC_THEME=dark DC_WINDOW=900x560 "DC_SCREEN=player|$VIDEO"
+          shot 26-narrow-menu 28 DC_THEME=dark DC_WINDOW=900x560 DC_SCREEN=menu
+          shot 27-splash 4 DC_THEME=dark
+          shot 28-exit 30 DC_THEME=dark DC_SCREEN=exit
+          shot 29-update 30 DC_THEME=dark DC_SCREEN=update
+          shot 30-updating 30 DC_THEME=light DC_SCREEN=updating
+          shot 32-trailer 45 DC_THEME=dark "DC_SCREEN=trailer|aqz-KE-bpKQ|Трейлер"
+          KEYS="Down Down Down Down" shot 31-people 34 DC_THEME=dark "DC_SCREEN=details|tv:1396|Во все тяжкие"
+          KEYS=""
+          # Уменьшаем, чтобы ветка была лёгкой.
+          for f in shots/*.png; do convert "$f" -quality 82 "${f%.png}.jpg" && rm "$f"; done
+          ls -la shots
+
+      - name: В ветку shots
+        run: |
+          cd shots
+          git init -q
+          git config user.name "deep-cinema-bot"
+          git config user.email "bot@users.noreply.github.com"
+          git checkout -q -b shots
+          git add -A
+          git commit -qm "Скриншоты $(date -u +%F\ %T)"
+          git push -qf "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}.git" shots

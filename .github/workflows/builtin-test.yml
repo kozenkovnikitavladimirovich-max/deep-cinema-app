@@ -1,0 +1,31 @@
+name: Проверка встроенного поиска
+on:
+  workflow_dispatch:
+    inputs:
+      trackers:
+        description: 'id трекеров через запятую (пусто — первые открытые)'
+        required: false
+        default: ''
+      query:
+        description: 'запрос'
+        required: false
+        default: 'matrix'
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+      - name: Каталог
+        run: python3 tool/build_tracker_catalog.py
+      - name: Тест
+        env:
+          TRACKERS: ${{ github.event.inputs.trackers }}
+          QUERY: ${{ github.event.inputs.query }}
+        run: |
+          flutter pub get
+          if [ -z "$TRACKERS" ]; then unset TRACKERS; fi
+          flutter test test/builtin_test.dart --reporter expanded 2>&1 | grep -E '::(notice|warning|error)|Some tests failed|All tests passed|Error|error:' | head -120

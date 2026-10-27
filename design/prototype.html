@@ -1,0 +1,547 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Deep Cinema — прототип</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap">
+<style>
+:root{--bg:#0b0b0e;--tx:#fff;--mu:rgba(255,255,255,.6);--gl:rgba(48,48,56,.55);--st:rgba(255,255,255,.14);--chip:rgba(255,255,255,.1);--btn:#f5f5f7;--btx:#111}
+body.light{--bg:#e6ebdd;--tx:#1c1c1e;--mu:rgba(0,0,0,.55);--gl:rgba(255,255,255,.5);--st:rgba(255,255,255,.7);--chip:rgba(0,0,0,.06);--btn:#1c1c1e;--btx:#fff}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%}
+body{background:var(--bg);color:var(--tx);font-family:Inter,system-ui,sans-serif;overflow:hidden;user-select:none}
+body.light{background:radial-gradient(700px 500px at 15% 25%,#d4ecd8,transparent 70%),radial-gradient(800px 600px at 85% 90%,#f7dccb,transparent 70%),#e6ebdd}
+button{font-family:inherit;color:inherit;border:0;background:none;cursor:pointer;padding:0}
+#app{position:fixed;inset:0;overflow:hidden}
+.page{position:absolute;inset:0;overflow-y:auto;overflow-x:hidden;scroll-behavior:smooth}
+.page::-webkit-scrollbar{width:0}
+.glass{background:var(--gl);backdrop-filter:blur(28px) saturate(1.4);-webkit-backdrop-filter:blur(28px) saturate(1.4);border:1px solid var(--st)}
+.mu{color:var(--mu)}
+/* ── фокус ── */
+[data-f]{transition:transform .18s ease,box-shadow .18s ease,background .18s,color .18s,outline-color .18s;outline:3px solid transparent;outline-offset:4px}
+body.glassy [data-f].f{outline-color:var(--tx)}
+body.tv [data-f].f{transform:scale(1.07);box-shadow:0 22px 44px rgba(0,0,0,.5);z-index:2;position:relative}
+body.tv .btn[data-f].f,body.tv .row[data-f].f,body.tv .navi[data-f].f,body.tv .chipb[data-f].f,body.tv .opt[data-f].f{background:var(--btn)!important;color:var(--btx)!important;border-color:transparent!important}
+body.tv .btn[data-f].f svg *{stroke:var(--btx);fill-opacity:1}
+/* ── кнопки ── */
+.btn{height:54px;padding:0 26px;border-radius:27px;display:inline-flex;align-items:center;gap:10px;font-size:18px;font-weight:700;white-space:nowrap}
+.btn.pri{background:var(--btn);color:var(--btx)}
+.btn.sec{background:var(--gl);backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);border:1px solid var(--st)}
+.btn.rnd{width:54px;padding:0;justify-content:center}
+.chipb{height:42px;padding:0 18px;border-radius:21px;background:var(--chip);border:1px solid var(--st);font-size:16px;font-weight:600;display:inline-flex;align-items:center;gap:8px}
+.chipb.sel{background:rgba(255,255,255,.3)}
+body.light .chipb.sel{background:rgba(0,0,0,.18)}
+.chipb.ex{background:rgba(255,80,80,.25);text-decoration:line-through}
+/* ── шапки ── */
+#top-glassy{position:fixed;left:0;right:0;top:0;height:96px;display:flex;align-items:center;justify-content:center;z-index:20;pointer-events:none}
+#top-glassy>*{pointer-events:auto}
+.logo{position:absolute;left:40px;top:28px;font-weight:900;font-size:22px;letter-spacing:-.5px;display:flex;align-items:center;gap:10px}
+.logo i{width:34px;height:34px;border-radius:10px;background:linear-gradient(135deg,#7c9cff,#c48bff)}
+.navpill{display:flex;gap:4px;padding:5px;border-radius:30px}
+.navi{height:46px;padding:0 22px;border-radius:23px;font-size:17px;font-weight:600;display:flex;align-items:center;gap:10px;color:var(--tx)}
+.navi.on{background:var(--btn);color:var(--btx)}
+.topr{position:absolute;right:36px;top:24px;display:flex;gap:12px;align-items:center}
+.ava{width:44px;height:44px;border-radius:22px;background:linear-gradient(135deg,#7c9cff,#c48bff);flex:none}
+#top-tv{position:fixed;left:0;right:0;top:0;height:100px;z-index:20;pointer-events:none}
+#top-tv>*{pointer-events:auto}
+.capsule{position:absolute;left:36px;top:28px;display:flex;align-items:center;gap:8px}
+.capb{height:46px;padding:0 20px 0 7px;border-radius:23px;display:flex;align-items:center;gap:10px;font-size:19px;font-weight:600}
+.capb .ic{width:32px;height:32px;border-radius:16px;background:rgba(255,255,255,.18);display:flex;align-items:center;justify-content:center}
+body.light .capb .ic{background:rgba(0,0,0,.08)}
+.clock{position:absolute;right:36px;top:28px;height:46px;padding:0 7px 0 18px;border-radius:23px;display:flex;align-items:center;gap:12px;font-size:18px;font-weight:600}
+.clock .ava{width:32px;height:32px}
+#side{position:fixed;left:30px;top:22px;bottom:22px;width:320px;border-radius:34px;padding:16px 12px;z-index:40;transform:translateX(-380px);transition:transform .32s cubic-bezier(.2,.8,.2,1);display:flex;flex-direction:column;gap:6px}
+#side.open{transform:none}
+#side .navi{width:100%;justify-content:flex-start;height:54px;font-size:19px;border-radius:27px}
+#shade{position:fixed;inset:0;background:linear-gradient(90deg,rgba(0,0,0,.55),transparent 70%);z-index:30;opacity:0;pointer-events:none;transition:opacity .3s}
+#shade.on{opacity:1;pointer-events:auto}
+/* ── баннер ── */
+.hero{position:relative;height:88vh;min-height:620px;overflow:hidden}
+.hero .bgimg{position:absolute;inset:-40px;background-size:cover;background-position:center 20%;filter:blur(28px) saturate(1.3) brightness(.75);transform:scale(1.1)}
+.hero .poster{position:absolute;right:10%;top:12%;height:66%;aspect-ratio:2/3;border-radius:24px;background-size:cover;background-position:center;box-shadow:0 40px 90px rgba(0,0,0,.6)}
+.hero .fade{position:absolute;inset:0;background:linear-gradient(90deg,var(--bg) 0%,rgba(11,11,14,.6) 40%,rgba(11,11,14,0) 70%),linear-gradient(0deg,var(--bg) 0%,rgba(11,11,14,0) 40%)}
+body.light .hero .fade{background:linear-gradient(90deg,rgba(230,235,221,.95) 0%,rgba(230,235,221,.5) 40%,rgba(0,0,0,0) 70%),linear-gradient(0deg,rgba(230,235,221,1) 0%,rgba(0,0,0,0) 40%)}
+.hero .desc{max-width:640px}
+.hero .txt{position:absolute;left:72px;bottom:16%;width:min(860px,62%);display:flex;flex-direction:column;gap:14px}
+.htitle{font-size:clamp(44px,6vw,86px);font-weight:900;line-height:.95;letter-spacing:-2px;text-transform:uppercase}
+body.glassy .htitle{text-transform:none;letter-spacing:-2.5px}
+.meta{display:flex;align-items:center;gap:10px;font-size:18px;font-weight:600;flex-wrap:wrap}
+.age{border:1.5px solid currentColor;border-radius:5px;padding:0 5px;font-size:13px;font-weight:700;line-height:18px;opacity:.8}
+.rate{padding:2px 8px;border-radius:6px;background:var(--chip);font-size:15px;font-weight:700}
+.desc{font-size:17px;line-height:1.5;color:var(--mu)}
+.dots{position:absolute;left:0;right:0;bottom:6%;display:flex;justify-content:center;gap:8px}
+.dots b{width:7px;height:7px;border-radius:4px;background:rgba(255,255,255,.4);cursor:pointer}
+.dots b.on{width:24px;background:#fff}
+/* ── полки ── */
+.shelf{padding:0 0 0 72px;margin-top:34px}
+.shelf h3{margin:0 0 14px;font-size:24px;font-weight:700;color:var(--mu)}
+body.glassy .shelf h3{color:var(--tx)}
+.row-sc{display:flex;gap:24px;overflow-x:auto;padding:16px 72px 26px 6px;margin-left:-6px;scroll-behavior:smooth}
+.row-sc::-webkit-scrollbar{height:0}
+.card{flex:none;position:relative;border-radius:16px;overflow:hidden;background:#222 center/cover;box-shadow:0 8px 20px rgba(0,0,0,.3)}
+.card.p{width:190px;height:285px}
+.card.l{width:300px;height:169px}
+.card .num{position:absolute;left:10px;top:2px;font-size:56px;font-weight:800;color:#fff;text-shadow:0 2px 14px rgba(0,0,0,.7);letter-spacing:-2px}
+.card .gen{position:absolute;left:0;right:0;bottom:0;padding:40px 10px 12px;text-align:center;font-size:15px;font-weight:600;color:rgba(255,255,255,.75);background:linear-gradient(0deg,rgba(0,0,0,.75),transparent)}
+.card.f .gen{color:#fff}
+.card .cm{position:absolute;left:0;right:0;bottom:0;padding:34px 12px 10px;display:flex;align-items:center;gap:8px;font-size:14px;font-weight:600;color:#fff;background:linear-gradient(0deg,rgba(0,0,0,.8),transparent)}
+.card .bar{width:30px;height:3px;border-radius:2px;background:rgba(255,255,255,.35);position:relative;flex:none}
+.card .bar i{position:absolute;left:0;top:0;bottom:0;background:#fff;border-radius:2px}
+.card .nm{position:absolute;left:10px;right:10px;top:40%;text-align:center;font-weight:900;font-size:20px;color:#fff;text-transform:uppercase;z-index:0;opacity:.0}
+.card.noimg .nm{opacity:1}
+.card .rt{position:absolute;right:8px;top:8px;padding:2px 7px;border-radius:7px;background:rgba(0,0,0,.6);font-size:13px;font-weight:700;color:#fff}
+.under{margin-top:8px;font-size:15px;font-weight:600;width:190px}
+.under small{display:block;color:var(--mu);font-weight:500}
+body.tv .under{display:none}
+.face{flex:none;width:140px;text-align:center}
+.face .c{width:140px;height:140px;border-radius:70px;background:#333 center/cover;margin-bottom:10px}
+.face b{display:block;font-size:16px}
+.face small{color:var(--mu);font-size:14px}
+/* ── страница каталога ── */
+.ptitle{padding:120px 72px 6px;font-size:40px;font-weight:800;letter-spacing:-1px}
+body.tv .ptitle{text-align:center;color:var(--mu);font-size:42px;font-weight:700}
+.toolbar{display:flex;gap:10px;flex-wrap:wrap;padding:14px 72px 0;align-items:center}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:28px 24px;padding:24px 72px 80px}
+.grid .card.p{width:100%;height:auto;aspect-ratio:2/3}
+/* ── панели ── */
+.overlay{position:fixed;inset:0;z-index:50;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,.45)}
+.overlay.on{display:flex}
+.dlg{width:min(760px,92vw);max-height:88vh;overflow:auto;border-radius:34px;padding:28px 30px}
+.dlg::-webkit-scrollbar{width:0}
+.lbl{font-size:15px;color:var(--mu);margin:18px 4px 10px}
+.wrap{display:flex;flex-wrap:wrap;gap:10px}
+.sidepanel{position:fixed;right:0;top:0;bottom:0;width:min(560px,92vw);z-index:50;padding:30px;overflow:auto;transform:translateX(100%);transition:transform .3s;border-radius:34px 0 0 34px}
+.sidepanel.on{transform:none}
+.row{display:flex;align-items:center;gap:14px;min-height:52px;padding:6px 22px;border-radius:26px;background:var(--chip);border:1px solid var(--st);font-size:18px;font-weight:600;margin-bottom:10px;width:100%;text-align:left}
+.row .v{margin-left:auto;color:var(--mu);font-weight:500}
+.row small{display:block;font-size:13px;color:var(--mu);font-weight:500}
+.ep{flex:none;width:300px}
+.ep .card{width:300px;height:169px}
+.ep .t{padding:12px 14px;margin-top:8px;border-radius:16px}
+body.tv .ep.f .t{background:rgba(255,220,180,.16);backdrop-filter:blur(20px)}
+.ep .k{font-size:13px;color:var(--mu);font-weight:600;letter-spacing:.5px}
+.ep .n{font-size:17px;font-weight:700;margin:2px 0}
+.ep .d{font-size:14px;color:var(--mu);line-height:1.35}
+/* ── плеер ── */
+#player{position:fixed;inset:0;z-index:60;background:#000;display:none;color:#fff}
+#player.on{display:block}
+#player .scene{position:absolute;inset:0;background-size:cover;background-position:center;filter:brightness(.55) blur(2px);transform:scale(1.04)}
+#player .ui{position:absolute;inset:0;transition:opacity .3s}
+#player .ui.hide{opacity:0}
+.pctl{display:flex;justify-content:center;align-items:center;gap:30px;position:absolute;left:0;right:0;top:42%}
+.pc{border-radius:50%;display:flex;align-items:center;justify-content:center;background:rgba(40,40,46,.5);backdrop-filter:blur(24px);border:1px solid rgba(255,255,255,.16)}
+.pc.big{background:#f5f5f7}
+.pbottom{position:absolute;left:72px;right:72px;bottom:36px}
+.ptrack{height:6px;border-radius:3px;background:rgba(255,255,255,.25);position:relative;margin-top:18px;cursor:pointer}
+.ptrack i{position:absolute;left:0;top:0;bottom:0;border-radius:3px;background:#fff}
+.ptime{display:flex;justify-content:space-between;font-size:15px;font-weight:600;color:rgba(255,255,255,.8);margin-top:8px}
+.pbtns{display:flex;gap:12px;align-items:center;margin-top:12px}
+.pb{height:44px;padding:0 20px;border-radius:22px;background:rgba(50,50,56,.55);backdrop-filter:blur(24px);border:1px solid rgba(255,255,255,.14);font-size:17px;font-weight:600;display:flex;align-items:center;gap:8px;color:#fff}
+.pr{width:52px;height:52px;border-radius:26px;background:rgba(50,50,56,.55);backdrop-filter:blur(24px);border:1px solid rgba(255,255,255,.14);display:flex;align-items:center;justify-content:center;color:#fff}
+.pr.on{background:#f5f5f7;color:#111}
+.ppanel{position:absolute;right:56px;bottom:230px;width:420px;max-height:62vh;overflow:auto;border-radius:30px;padding:14px 12px;background:rgba(70,60,52,.6);backdrop-filter:blur(36px) saturate(1.4);border:1px solid rgba(255,255,255,.16);display:none}
+.ppanel.on{display:block}
+.ppanel::-webkit-scrollbar{width:0}
+.sec{font-size:14px;color:rgba(255,255,255,.55);padding:10px 16px 6px}
+.opt{display:flex;align-items:center;gap:12px;min-height:46px;padding:4px 16px;border-radius:23px;font-size:17px;font-weight:600;width:100%;text-align:left;color:#fff}
+.opt .ck{width:18px;flex:none}
+.opt small{display:block;font-size:13px;color:rgba(255,255,255,.55);font-weight:500}
+body.glassy .opt.f{background:rgba(255,255,255,.18)}
+.sep{height:1px;background:rgba(255,255,255,.14);margin:6px 16px}
+.toast{position:fixed;left:50%;bottom:40px;transform:translateX(-50%);padding:14px 24px;border-radius:22px;z-index:99;font-weight:600;opacity:0;transition:opacity .3s;pointer-events:none}
+.toast.on{opacity:1}
+/* переключатель стиля */
+#styler{position:fixed;right:18px;bottom:16px;z-index:100;display:flex;gap:6px;padding:6px;border-radius:26px;background:rgba(20,20,24,.8);backdrop-filter:blur(20px);border:1px solid rgba(255,255,255,.18);box-shadow:0 10px 30px rgba(0,0,0,.5)}
+#styler button{height:38px;padding:0 16px;border-radius:19px;font-size:14px;font-weight:700;color:#fff}
+#styler button.on{background:#fff;color:#111}
+#help{position:fixed;right:22px;bottom:72px;z-index:100;font-size:12px;color:rgba(255,255,255,.5);max-width:220px;text-align:right}
+body.light #help{color:rgba(0,0,0,.45)}
+</style>
+</head>
+<body class="tv">
+<div id="app"></div>
+
+<!-- Шапка «Стекло» -->
+<div id="top-glassy" style="display:none">
+  <div class="logo"><i></i>Deep Cinema</div>
+  <div class="navpill glass" id="navpill"></div>
+  <div class="topr"><button class="btn sec rnd" data-f data-go="search" aria-label="Поиск"><svg width="20" height="20" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7" fill="none" stroke="currentColor" stroke-width="2.2"/><path d="m16.5 16.5 4 4" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg></button><button class="ava" data-f data-go="settings" aria-label="Профиль"></button></div>
+</div>
+<!-- Шапка tvOS -->
+<div id="top-tv">
+  <div class="capsule"><span class="mu" style="font-size:22px">‹</span><button class="capb glass" data-f id="capb"></button></div>
+  <div class="clock glass"><span id="clk">21:40</span><span class="ava"></span></div>
+</div>
+<div id="shade"></div>
+<nav id="side" class="glass"></nav>
+
+<div class="overlay" id="ov"><div class="dlg glass" id="dlg"></div></div>
+<div class="sidepanel glass" id="sp"></div>
+
+<div id="player">
+  <div class="scene" id="pscene"></div>
+  <div class="ui" id="pui"></div>
+</div>
+<div class="toast glass" id="toast"></div>
+
+<div id="styler">
+  <button data-style="glassy">Старый · Стекло</button>
+  <button data-style="tv" class="on">Новый · tvOS</button>
+  <button id="themeb">Тёмная</button>
+</div>
+<div id="help">Мышь или стрелки ← → ↑ ↓, Enter — выбрать, Esc/Backspace — назад</div>
+
+<script>
+// ── Данные (постеры с Кинопоиска) ─────────────────────────────
+const P = id => `https://kinopoiskapiunofficial.tech/images/posters/kp/${id}.jpg`;
+const T = [
+ {id:258687,t:'Интерстеллар',y:2014,s:0,g:['Фантастика','Драма'],kp:8.6,im:8.7,a:'12+',du:'2 ч 49 мин',d:'Когда засуха и пыльные бури ставят человечество на грань вымирания, группа исследователей отправляется сквозь червоточину в поисках нового дома.',c:'США, Великобритания',cast:'Кристофер Нолан|Мэттью Макконахи|Энн Хэтэуэй|Джессика Честейн'},
+ {id:447301,t:'Начало',y:2010,s:0,g:['Фантастика','Боевик'],kp:8.7,im:8.8,a:'12+',du:'2 ч 28 мин',d:'Кобб — вор, который крадёт секреты из подсознания во время сна. Теперь ему предстоит обратное: внедрить идею.',c:'США',cast:'Кристофер Нолан|Леонардо ДиКаприо|Джозеф Гордон-Левитт|Эллиот Пейдж'},
+ {id:1143242,t:'Джентльмены',y:2019,s:0,g:['Криминал','Комедия'],kp:8.6,im:7.8,a:'18+',du:'1 ч 53 мин',d:'Американский эмигрант строит в Лондоне марихуановую империю и решает её продать — и тут начинается охота.',c:'США, Великобритания',cast:'Гай Ричи|Мэттью Макконахи|Чарли Ханнэм|Хью Грант'},
+ {id:409424,t:'Дюна',y:2021,s:0,g:['Фантастика','Приключения'],kp:7.8,im:8.0,a:'12+',du:'2 ч 35 мин',d:'Наследник знатного рода оказывается на самой опасной планете Вселенной — Арракисе.',c:'США, Канада',cast:'Дени Вильнёв|Тимоти Шаламе|Ребекка Фергюсон|Оскар Айзек'},
+ {id:301,t:'Матрица',y:1999,s:0,g:['Фантастика','Боевик'],kp:8.5,im:8.7,a:'16+',du:'2 ч 16 мин',d:'Хакер Нео узнаёт, что привычный мир — лишь иллюзия, созданная машинами.',c:'США',cast:'Лана Вачовски|Киану Ривз|Лоренс Фишбёрн|Кэрри-Энн Мосс'},
+ {id:326,t:'Побег из Шоушенка',y:1994,s:0,g:['Драма'],kp:9.1,im:9.3,a:'16+',du:'2 ч 22 мин',d:'Банкира обвиняют в убийстве жены и отправляют в тюрьму, где он не теряет надежды.',c:'США',cast:'Фрэнк Дарабонт|Тим Роббинс|Морган Фриман|Боб Гантон'},
+ {id:435,t:'Зелёная миля',y:1999,s:0,g:['Драма','Фэнтези'],kp:9.1,im:8.6,a:'16+',du:'3 ч 9 мин',d:'Надзиратель тюремного блока смертников знакомится с необычным заключённым.',c:'США',cast:'Фрэнк Дарабонт|Том Хэнкс|Майкл Кларк Дункан|Дэвид Морс'},
+ {id:111543,t:'Тёмный рыцарь',y:2008,s:0,g:['Боевик','Криминал'],kp:8.5,im:9.0,a:'16+',du:'2 ч 32 мин',d:'Бэтмен сталкивается с Джокером — преступником, который хочет погрузить Готэм в хаос.',c:'США',cast:'Кристофер Нолан|Кристиан Бейл|Хит Леджер|Аарон Экхарт'},
+ {id:535341,t:'1+1',y:2011,s:0,g:['Драма','Комедия'],kp:8.8,im:8.5,a:'16+',du:'1 ч 52 мин',d:'Аристократ, прикованный к коляске, нанимает в помощники парня из пригорода.',c:'Франция',cast:'Оливье Накаш|Франсуа Клюзе|Омар Си|Анн Ле Ни'},
+ {id:448,t:'Форрест Гамп',y:1994,s:0,g:['Драма','Мелодрама'],kp:8.9,im:8.8,a:'12+',du:'2 ч 22 мин',d:'История простодушного человека, который невольно оказывается в центре важнейших событий века.',c:'США',cast:'Роберт Земекис|Том Хэнкс|Робин Райт|Гэри Синиз'},
+ {id:404900,t:'Во все тяжкие',y:2008,s:1,g:['Драма','Криминал'],kp:9.0,im:9.5,a:'18+',du:'5 сезонов, 62 серии',d:'Школьный учитель химии узнаёт о смертельной болезни и начинает варить метамфетамин.',c:'США',cast:'Винс Гиллиган|Брайан Крэнстон|Аарон Пол|Анна Ганн'},
+ {id:464963,t:'Игра престолов',y:2011,s:1,g:['Фэнтези','Драма'],kp:9.0,im:9.2,a:'18+',du:'8 сезонов, 73 серии',d:'Знатные семьи Вестероса ведут борьбу за Железный трон, пока с севера надвигается угроза.',c:'США, Великобритания',cast:'Дэвид Бениофф|Кит Харингтон|Эмилия Кларк|Питер Динклэйдж'},
+ {id:502838,t:'Шерлок',y:2010,s:1,g:['Детектив','Драма'],kp:8.9,im:9.1,a:'12+',du:'4 сезона, 13 серий',d:'Шерлок Холмс и доктор Ватсон расследуют преступления в современном Лондоне.',c:'Великобритания',cast:'Стивен Моффат|Бенедикт Камбербэтч|Мартин Фриман|Уна Стаббс'},
+ {id:77044,t:'Друзья',y:1994,s:1,g:['Комедия'],kp:8.8,im:8.9,a:'16+',du:'10 сезонов, 236 серий',d:'Шестеро друзей живут в Нью-Йорке, влюбляются, ссорятся и мирятся.',c:'США',cast:'Марта Кауффман|Дженнифер Энистон|Мэттью Перри|Мэтт Леблан'},
+ {id:41519,t:'Брат',y:1997,s:0,g:['Криминал','Драма'],kp:8.3,im:7.8,a:'18+',du:'1 ч 40 мин',d:'Демобилизованный Данила Багров приезжает в Петербург к старшему брату.',c:'Россия',cast:'Алексей Балабанов|Сергей Бодров|Виктор Сухоруков|Светлана Письмиченко'},
+ {id:342,t:'Криминальное чтиво',y:1994,s:0,g:['Криминал'],kp:8.6,im:8.9,a:'18+',du:'2 ч 34 мин',d:'Несколько связанных историй из жизни бандитов, боксёра и гангстерских подружек.',c:'США',cast:'Квентин Тарантино|Джон Траволта|Сэмюэл Л. Джексон|Ума Турман'},
+];
+const byId = id => T.find(x=>x.id==id);
+const films = T.filter(x=>!x.s), series = T.filter(x=>x.s);
+const peopleOf = x => { const c=(x.cast||'Режиссёр|Актёр|Актриса|Актёр').split('|'); return [[c[0], x.s?'Создатель':'Режиссёр'], ...c.slice(1).map(n=>[n,'Актёр'])]; };
+const state = {style:'tv', light:false, page:'home', stack:[], hero:0, my:{fav:[447301,404900], later:[409424], hist:[{id:404900,p:.6,n:'Сез. 3, сер. 4 · 23 мин'},{id:258687,p:.3,n:'Осталось 1 ч 58 мин'},{id:502838,p:.8,n:'Сез. 2, сер. 1 · 12 мин'}]}, filters:{g:{}, q:'', sort:'pop'}};
+
+// ── Иконки ──────────────────────────────────────────────────
+const I = {
+ play:'<svg width="18" height="20" viewBox="0 0 20 22"><path d="M2 2v18l16-9z" fill="currentColor"/></svg>',
+ plus:'<svg width="22" height="22" viewBox="0 0 22 22"><path d="M11 3v16M3 11h16" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg>',
+ info:'<svg width="22" height="22" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9.5" fill="none" stroke="currentColor" stroke-width="2"/><path d="M12 11v6" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/><circle cx="12" cy="7.5" r="1.4" fill="currentColor"/></svg>',
+ heart:'<svg width="22" height="22" viewBox="0 0 24 24"><path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg>',
+ trailer:'<svg width="22" height="22" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="3" fill="none" stroke="currentColor" stroke-width="2"/><path d="M10 9v6l5-3z" fill="currentColor"/></svg>',
+ tune:'<svg width="20" height="20" viewBox="0 0 24 24"><path d="M4 7h10M18 7h2M4 17h4M12 17h8" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><circle cx="16" cy="7" r="2.5" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="10" cy="17" r="2.5" fill="none" stroke="currentColor" stroke-width="2"/></svg>',
+ home:'<svg width="18" height="18" viewBox="0 0 24 24"><path d="M4 11 12 4l8 7v9h-5v-6H9v6H4z" fill="currentColor"/></svg>',
+ film:'<svg width="18" height="18" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="3" fill="none" stroke="currentColor" stroke-width="2"/><path d="M7 4v16M17 4v16" stroke="currentColor" stroke-width="2"/></svg>',
+ tv:'<svg width="18" height="18" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="12" rx="2.5" fill="none" stroke="currentColor" stroke-width="2"/><path d="M8 20h8" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>',
+ my:'<svg width="18" height="18" viewBox="0 0 24 24"><path d="M6 3h12v18l-6-4-6 4z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg>',
+ search:'<svg width="18" height="18" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7" fill="none" stroke="currentColor" stroke-width="2.2"/><path d="m16.5 16.5 4 4" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg>',
+ gear:'<svg width="18" height="18" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3" fill="none" stroke="currentColor" stroke-width="2"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9 7 7M17 17l2.1 2.1M4.9 19.1 7 17M17 7l2.1-2.1" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>',
+ subs:'<svg width="22" height="20" viewBox="0 0 24 22"><rect x="2" y="2" width="20" height="14" rx="4" fill="none" stroke="currentColor" stroke-width="2"/><path d="M8 16l-2 4 6-4M6 8h5M13 8h5M6 11.5h8" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>',
+ audio:'<svg width="22" height="20" viewBox="0 0 24 22"><path d="M4 9v4M8 6v10M12 3v16M16 6v10M20 9v4" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg>',
+ pip:'<svg width="22" height="20" viewBox="0 0 24 22"><rect x="2" y="2" width="20" height="16" rx="3" fill="none" stroke="currentColor" stroke-width="2"/><rect x="11" y="9" width="8" height="6" rx="1.5" fill="currentColor"/></svg>',
+ note:'<svg width="18" height="18" viewBox="0 0 24 24"><path d="M9 18V6l11-2v12" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="6" cy="18" r="3" fill="currentColor"/><circle cx="17" cy="16" r="3" fill="currentColor"/></svg>',
+};
+const NAV = [['home','Главная',I.home],['films','Фильмы',I.film],['series','Сериалы',I.tv],['my','Моё',I.my]];
+
+// ── Отрисовка ───────────────────────────────────────────────
+const app = document.getElementById('app');
+function h(s){return s}
+function card(x,kind='p',extra=''){
+  const ttl = x.t.replace(/"/g,'&quot;');
+  return `<div style="flex:none"><button class="card ${kind}" data-f data-open="${x.id}" style="background-image:url(${P(x.id)}),linear-gradient(160deg,hsl(${x.id%360},45%,42%),hsl(${x.id%360},45%,12%))" aria-label="${ttl}">${extra}${kind==='p'&&state.style==='glassy'?`<span class="rt">КП ${x.kp}</span>`:''}<span class="nm">${x.t}</span></button>${kind==='p'?`<div class="under">${x.t}<small>${x.y} · ${x.g[0]}</small></div>`:''}</div>`;
+}
+function shelf(title,items){return `<div class="shelf"><h3>${title}</h3><div class="row-sc">${items}</div></div>`}
+function heroBlock(x,buttons){
+  return `<div class="hero"><div class="bgimg" style="background-image:url(${P(x.id)})"></div><div class="poster" style="background-image:url(${P(x.id)})"></div><div class="fade"></div>
+  <div class="txt">
+   <div class="htitle">${x.t}</div>
+   <div class="meta">${x.s?'Сериал':'Фильм'} · ${x.g.join(' · ')} <span class="age">${x.a}</span></div>
+   <div class="desc">${x.d}</div>
+   <div class="meta" style="font-size:16px">${x.y} · ${x.du} <span class="rate">КП ${x.kp}</span><span class="rate">IMDb ${x.im}</span></div>
+   <div style="display:flex;gap:12px;align-items:center;margin-top:8px;flex-wrap:wrap">${buttons}</div>
+  </div></div>`;
+}
+const pages = {
+ home(){
+  const heroes=[258687,404900,1143242,464963,409424];
+  const x=byId(heroes[state.hero%heroes.length]);
+  const cont=state.my.hist.map(e=>{const t=byId(e.id);return card(t,'l',`<div class="cm">${I.play}<span class="bar"><i style="width:${e.p*100}%"></i></span>${e.n}</div>`)}).join('');
+  return heroBlock(x,`<button class="btn pri" data-f data-watch="${x.id}">${I.play}Смотреть</button><button class="btn sec rnd" data-f data-toast="Добавлено в «Буду смотреть»" aria-label="Буду смотреть">${I.plus}</button><button class="btn sec rnd" data-f data-open="${x.id}" aria-label="Подробнее">${I.info}</button><button class="btn sec rnd" data-f data-hero="1" aria-label="Следующий">›</button>`).replace('</div></div>',`</div><div class="dots">${heroes.map((_,i)=>`<b class="${i==state.hero%heroes.length?'on':''}" data-herodot="${i}"></b>`).join('')}</div></div>`)
+  +shelf('Продолжить просмотр',cont)
+  +shelf('Лучшие сериалы',series.map((x,i)=>card(x,'p',`<span class="num">${i+1}</span><span class="gen">${x.g[0]}</span>`)).join(''))
+  +shelf('Лучшие фильмы',films.slice().sort((a,b)=>b.kp-a.kp).map((x,i)=>card(x,'p',`<span class="num">${i+1}</span><span class="gen">${x.g[0]}</span>`)).join(''))
+  +shelf('Режиссёры',['Кристофер Нолан','Дени Вильнёв','Квентин Тарантино','Алексей Балабанов','Гай Ричи'].map(n=>`<div class="face"><button class="c" data-f data-toast="Страница человека: ${n}" style="background:linear-gradient(135deg,hsl(${n.length*37%360},40%,45%),hsl(${n.length*37%360},40%,18%))"></button><b>${n}</b><small>Режиссёр</small></div>`).join(''))
+  +shelf('Потому что вы смотрели «Во все тяжкие»',[342,1143242,41519,111543,502838].map(i=>card(byId(i))).join(''))
+  +'<div style="height:110px"></div>';
+ },
+ catalog(kind){
+  const all=kind==='films'?films:series;
+  const gi=Object.entries(state.filters.g).filter(e=>e[1]==1).map(e=>e[0]), ge=Object.entries(state.filters.g).filter(e=>e[1]==-1).map(e=>e[0]);
+  let list=all.filter(x=>gi.every(g=>x.g.includes(g))&&!ge.some(g=>x.g.includes(g)));
+  if(state.filters.sort==='rate')list=list.slice().sort((a,b)=>b.kp-a.kp);
+  if(state.filters.sort==='new')list=list.slice().sort((a,b)=>b.y-a.y);
+  const chips=[...gi.map(g=>`<span class="chipb sel">${g}</span>`),...ge.map(g=>`<span class="chipb ex">${g}</span>`)].join('');
+  return `<div class="ptitle">${kind==='films'?'Фильмы':'Сериалы'}</div>
+   <div class="toolbar"><button class="btn sec" data-f data-filters="1">${I.tune}Фильтры</button>
+   ${['pop','Популярные','rate','По рейтингу','new','Новые'].reduce((a,v,i,arr)=>i%2?a:a+`<button class="chipb ${state.filters.sort===v?'sel':''}" data-f data-sort="${v}">${arr[i+1]}</button>`,'')}
+   ${chips}<span class="mu" style="margin-left:8px">${list.length} из ${all.length}</span></div>
+   <div class="grid">${list.map(x=>card(x)).join('')||'<div class="mu">Под фильтры ничего не подходит</div>'}</div>`;
+ },
+ films(){return pages.catalog('films')},
+ series(){return pages.catalog('series')},
+ my(){
+  const sec=(t,ids)=>shelf(t,ids.map(i=>card(byId(i))).join('')||'<span class="mu">Пусто</span>');
+  return `<div class="ptitle">Моё</div>`+sec('Избранное',state.my.fav)+sec('Буду смотреть',state.my.later)+shelf('История',state.my.hist.map(e=>card(byId(e.id),'l',`<div class="cm"><span class="bar"><i style="width:${e.p*100}%"></i></span>${e.n}</div>`)).join(''))+'<div style="height:110px"></div>';
+ },
+ search(){
+  const q=state.filters.q.toLowerCase();
+  const list=q?T.filter(x=>x.t.toLowerCase().includes(q)):T.slice(0,8);
+  return `<div class="ptitle">Поиск</div><div class="toolbar"><input id="q" value="${state.filters.q}" placeholder="Название фильма или сериала" style="width:min(680px,90%);height:58px;border-radius:29px;padding:0 26px;font:600 20px Inter;border:1px solid var(--st);background:var(--gl);color:var(--tx);outline:none"></div><div class="grid">${list.map(x=>card(x)).join('')}</div>`;
+ },
+ settings(){
+  const r=(t,v,go='')=>`<button class="row" data-f ${go}>${t}${v?`<span class="v">${v}</span>`:''}<span class="mu">›</span></button>`;
+  const g=t=>`<div class="lbl" style="font-weight:700;letter-spacing:1px">${t}</div>`;
+  return `<div class="ptitle">Настройки</div><div style="display:flex;gap:60px;padding:30px 72px 120px;align-items:flex-start;flex-wrap:wrap">
+   <div style="flex:1;min-width:260px;display:flex;flex-direction:column;align-items:center;gap:14px;padding-top:30px"><div class="ava" style="width:200px;height:200px;border-radius:100px"></div><div style="font-size:28px;font-weight:800">Никита</div><div style="display:flex;gap:10px"><button class="chipb sel" data-f>Никита</button><button class="chipb" data-f data-toast="Профиль «Аня»">Аня</button><button class="chipb" data-f data-toast="Детский профиль">Дети</button></div></div>
+   <div style="flex:1.4;min-width:340px">
+    ${g('СМОТРЕТЬ В ОДИН КЛИК')}${r('Качество по умолчанию','1080p','data-toast="Авто → 4K → 1080p → 720p"')}${r('Озвучка по умолчанию','Любая','data-toast="Любая → Дубляж → Многоголосый → Оригинал"')}
+    ${g('СЕРИАЛЫ')}${r('Пропускать заставки','Вкл.')}${r('Следующая серия автоматически','Вкл.')}
+    ${g('ВНЕШНИЙ ВИД')}${r('Тема',state.light?'Светлая':'Тёмная','data-theme="1"')}${r('Лёгкий режим для слабых ТВ','Выкл.')}${r('Звуки интерфейса','Вкл.')}
+    ${g('ИСТОЧНИКИ')}${r('Данные о фильмах','Авто (TMDB → Кинопоиск)')}${r('Агрегатор раздач','Jackett · найден')}${r('Торрент-движок','работает')}
+   </div></div>`;
+ },
+ title(id){
+  const x=byId(id); const people=peopleOf(x);
+  const sim=T.filter(t=>t.id!=x.id&&t.g.some(g=>x.g.includes(g))).slice(0,8);
+  const eps=x.s?`<div class="shelf"><div style="display:flex;gap:10px;margin-bottom:6px"><button class="chipb sel" data-f>Сезон 1</button><button class="chipb" data-f>Сезон 2</button><button class="chipb" data-f>Сезон 3</button></div><div class="row-sc">${[['Пилот','Учитель химии узнаёт страшный диагноз.'],['Кот в мешке','Первые шаги в новом деле идут не по плану.'],['И мешок в реке','Приходится принимать тяжёлые решения.'],['Пациент','Семья начинает что-то подозревать.'],['Серая материя','Старые друзья предлагают помощь.']].map((e,i)=>`<button class="ep" data-f data-watch="${x.id}" style="text-align:left"><div class="card l" style="background-image:url(${P(x.id)});background-position:center 30%">${i==0?'<div class="cm">✓ Просмотрено</div>':`<div class="cm">${I.play} ${45+i} мин</div>`}</div><div class="t"><div class="k">СЕРИЯ ${i+1}</div><div class="n">${e[0]}</div><div class="d">${e[1]}</div></div></button>`).join('')}</div></div>`:'';
+  return heroBlock(x,`<button class="btn pri" data-f data-watch="${x.id}">${I.play}${x.s?'Продолжить S1 E2':'Смотреть'}</button><button class="btn sec" data-f data-manual="${x.id}">${I.tune}Выбрать раздачу</button><button class="btn sec rnd" data-f data-toast="Добавлено в «Буду смотреть»" aria-label="Буду смотреть">${I.plus}</button><button class="btn sec rnd" data-f data-toast="Добавлено в избранное" aria-label="Избранное">${I.heart}</button><button class="btn sec rnd" data-f data-trailer="${x.id}" aria-label="Трейлер">${I.trailer}</button>`)
+  +`<div style="position:relative;margin-top:-40px;padding:0 72px;color:var(--mu);font-size:16px">В главных ролях <span style="color:var(--tx)">${people.slice(1).map(p=>p[0]).join(', ')}</span> · ${people[0][1]} <span style="color:var(--tx)">${people[0][0]}</span></div>`
+  +eps
+  +shelf('Актёры и съёмочная группа',people.map(p=>`<div class="face"><button class="c" data-f data-toast="Фильмография: ${p[0]}" style="background:linear-gradient(135deg,hsl(${p[0].length*41%360},35%,50%),hsl(${p[0].length*41%360},35%,20%))"></button><b>${p[0]}</b><small>${p[1]}</small></div>`).join(''))
+  +shelf('Похожие',sim.map(t=>card(t)).join(''))
+  +`<div class="shelf" style="display:flex;gap:60px;padding-right:72px;flex-wrap:wrap"><div style="flex:1;min-width:220px"><h3>Информация</h3><div class="mu">Премьера</div><div>${x.y}</div><div class="mu" style="margin-top:10px">Страна</div><div>${x.c}</div><div class="mu" style="margin-top:10px">Возраст</div><div>${x.a}</div></div><div style="flex:1;min-width:220px"><h3>Раздача</h3><div class="mu">Сейчас выбрана</div><div>1080p · LostFilm · 14 ГБ</div><div class="mu" style="margin-top:10px">Озвучки в файле</div><div>LostFilm, оригинал (англ.)</div></div><div style="flex:1;min-width:220px"><h3>Ваша оценка</h3><div style="display:flex;gap:6px;flex-wrap:wrap">${[...Array(10)].map((_,i)=>`<button class="chipb" data-f data-toast="Ваша оценка: ${i+1}">${i+1}</button>`).join('')}</div></div></div><div style="height:120px"></div>`;
+ },
+};
+
+function render(keepScroll){
+  document.body.className = (state.style==='tv'?'tv':'glassy')+(state.light?' light':'');
+  document.querySelectorAll('#styler [data-style]').forEach(b=>b.classList.toggle('on',b.dataset.style===state.style));
+  document.getElementById('themeb').textContent = state.light?'Светлая':'Тёмная';
+  document.getElementById('top-glassy').style.display = state.style==='glassy'?'flex':'none';
+  document.getElementById('top-tv').style.display = state.style==='tv'?'block':'none';
+  const pg = state.page, isTitle = pg.startsWith('title:');
+  const navKey = isTitle ? (state.stack.find(s=>!s.startsWith('title:'))||'home') : pg;
+  document.getElementById('navpill').innerHTML = NAV.map(([k,t,ic])=>`<button class="navi ${navKey===k?'on':''}" data-f data-go="${k}">${t}</button>`).join('');
+  const cur = NAV.find(n=>n[0]===navKey) || (pg==='search'?['search','Поиск',I.search]:pg==='settings'?['settings','Настройки',I.gear]:NAV[0]);
+  document.getElementById('capb').innerHTML = `<span class="ic">${cur[2]}</span>${isTitle?byId(pg.split(':')[1]).t:cur[1]}`;
+  document.getElementById('side').innerHTML = `<div style="display:flex;align-items:center;gap:12px;padding:4px 14px 14px"><span class="ava" style="width:40px;height:40px"></span><b style="font-size:18px">Никита</b><span class="mu" style="margin-left:auto">${document.getElementById('clk').textContent}</span></div>`
+   + [['search','Поиск',I.search],...NAV].map(([k,t,ic])=>`<button class="navi ${navKey===k?'on':''}" data-f data-go="${k}">${ic}${t}</button>`).join('')
+   + `<div style="margin-top:auto"><button class="navi" data-f data-go="settings">${I.gear}Настройки</button></div>`;
+  const html = isTitle ? pages.title(pg.split(':')[1]) : pages[pg]();
+  const old = app.querySelector('.page'); const st = keepScroll&&old?old.scrollTop:0;
+  app.innerHTML = `<div class="page">${html}</div>`;
+  app.querySelector('.page').scrollTop = st;
+  const q=document.getElementById('q'); if(q){q.oninput=()=>{state.filters.q=q.value;render(true);const n=document.getElementById('q');n.focus();n.setSelectionRange(n.value.length,n.value.length)}}
+  if(!keepScroll) setTimeout(()=>focusFirst(),30);
+}
+
+// ── Навигация ───────────────────────────────────────────────
+function go(p){ if(p===state.page) return; state.stack.push(state.page); state.page=p; closeSide(); render(); }
+function back(){
+  if(document.getElementById('player').classList.contains('on')){closePlayer();return}
+  if(document.getElementById('ov').classList.contains('on')){closeOv();return}
+  if(document.getElementById('sp').classList.contains('on')){closeSp();return}
+  if(document.getElementById('side').classList.contains('open')){closeSide();return}
+  if(state.stack.length){state.page=state.stack.pop();render();return}
+  if(state.style==='tv') openSide();
+}
+function openSide(){document.getElementById('side').classList.add('open');document.getElementById('shade').classList.add('on');setTimeout(()=>{const on=document.querySelector('#side .navi.on')||document.querySelector('#side .navi');setF(on)},50)}
+function closeSide(){document.getElementById('side').classList.remove('open');document.getElementById('shade').classList.remove('on')}
+document.getElementById('shade').onclick=closeSide;
+
+let F=null;
+function setF(el){ if(F) F.classList.remove('f'); F=el; if(el){el.classList.add('f'); el.scrollIntoView({block:'nearest',inline:'nearest',behavior:'smooth'}); if(el.closest('.card,.ep,.face')) el.closest('.page')?.scrollBy; } }
+function scope(){
+  if(document.getElementById('player').classList.contains('on')) return document.getElementById('player');
+  if(document.getElementById('ov').classList.contains('on')) return document.getElementById('ov');
+  if(document.getElementById('sp').classList.contains('on')) return document.getElementById('sp');
+  if(document.getElementById('side').classList.contains('open')) return document.getElementById('side');
+  return document;
+}
+function focusables(){
+  const s=scope();
+  return [...s.querySelectorAll('[data-f]')].filter(e=>{ if(s===document && e.closest('#side,#ov,#sp,#player,#styler')) return false; const r=e.getBoundingClientRect(); return r.width>0&&r.height>0&&getComputedStyle(e).visibility!=='hidden'&&e.offsetParent!==null; });
+}
+function focusFirst(){ const l=focusables(); const pri=l.find(e=>e.classList.contains('pri'))||l.find(e=>!e.closest('#top-tv,#top-glassy'))||l[0]; setF(pri); }
+function move(dx,dy){
+  const l=focusables(); if(!F||!l.includes(F)){focusFirst();return}
+  const a=F.getBoundingClientRect(), ax=a.left+a.width/2, ay=a.top+a.height/2;
+  let best=null,bs=1e9;
+  for(const e of l){ if(e===F) continue; const b=e.getBoundingClientRect(), bx=b.left+b.width/2, by=b.top+b.height/2;
+    const ddx=bx-ax, ddy=by-ay;
+    if(dx&&Math.sign(ddx)!==dx) continue; if(dy&&Math.sign(ddy)!==dy) continue;
+    if(dx&&Math.abs(ddx)<4) continue; if(dy&&Math.abs(ddy)<4) continue;
+    const main=dx?Math.abs(ddx):Math.abs(ddy), cross=dx?Math.abs(ddy):Math.abs(ddx);
+    const sc=main+cross*(dy?0.6:3); if(sc<bs){bs=sc;best=e} }
+  if(best) setF(best);
+  else if(dx===-1 && state.style==='tv' && scope()===document) openSide();
+  else if(dy===-1 && scope()===document) app.querySelector('.page').scrollTo({top:0});
+}
+document.addEventListener('keydown',e=>{
+  if(e.target.id==='q' && !['ArrowDown','Escape','Enter'].includes(e.key)) return;
+  const k=e.key;
+  if(document.getElementById('player').classList.contains('on')) pokeUi();
+  if(k==='ArrowLeft'){move(-1,0);e.preventDefault()}
+  else if(k==='ArrowRight'){move(1,0);e.preventDefault()}
+  else if(k==='ArrowUp'){move(0,-1);e.preventDefault()}
+  else if(k==='ArrowDown'){move(0,1);e.preventDefault()}
+  else if(k==='Enter'||k===' '){ if(F){F.click();e.preventDefault()} }
+  else if(k==='Escape'||k==='Backspace'){ if(e.target.id==='q'&&k==='Backspace') return; back();e.preventDefault()}
+});
+document.addEventListener('mouseover',e=>{const t=e.target.closest('[data-f]'); if(t&&t!==F&&!t.closest('#styler')){ if(F) F.classList.remove('f'); F=t; t.classList.add('f'); }});
+document.addEventListener('mouseup',e=>{ if(e.button===3){back()} });
+
+// ── Клики ───────────────────────────────────────────────────
+document.addEventListener('click',e=>{
+  const t=e.target.closest('button,[data-herodot]'); if(!t) return;
+  const d=t.dataset;
+  if(d.style){state.style=d.style;closeSide();render();return}
+  if(t.id==='themeb'||d.theme){state.light=!state.light;render(true);return}
+  if(t.id==='capb'){openSide();return}
+  if(d.go){go(d.go);return}
+  if(d.open){closeOv();go('title:'+d.open);return}
+  if(d.hero){state.hero++;render(true);return}
+  if(d.herodot!==undefined){state.hero=+d.herodot;render(true);return}
+  if(d.watch){quick(byId(d.watch));return}
+  if(d.manual){manual(byId(d.manual));return}
+  if(d.trailer){openPlayer(byId(d.trailer),true);return}
+  if(d.toast){toast(d.toast);return}
+  if(d.filters){filters();return}
+  if(d.sort){state.filters.sort=d.sort;render(true);return}
+});
+function toast(s){const t=document.getElementById('toast');t.textContent=s;t.classList.add('on');clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove('on'),1800)}
+
+// ── «Смотреть» в один клик ─────────────────────────────────
+function quick(x){
+  const qs=[['','Лучшее'],['4K','4K',6],['1080p','1080p',24],['720p','720p',11]], vs=[['','Любая'],['Дубляж','Дубляж',3],['Многоголосый','Многоголосый',18],['LostFilm','LostFilm',9],['HDRezka','HDRezka',5],['Оригинал','Оригинал',2]];
+  let sq='1080p', sv='';
+  const draw=()=>{document.getElementById('dlg').innerHTML=`<div class="mu" style="font-weight:700;letter-spacing:1.2px;font-size:14px">СМОТРЕТЬ</div><div style="font-size:30px;font-weight:800;margin-top:4px">${x.t}${x.s?' · S1 E2':''}</div>
+   <div class="lbl">Качество</div><div class="wrap">${qs.map(q=>`<button class="chipb ${sq===q[0]?'sel':''}" data-f data-q="${q[0]}">${q[1]}${q[2]?` <span class="mu">${q[2]}</span>`:''}</button>`).join('')}</div>
+   <div class="lbl">Озвучка</div><div class="wrap">${vs.map(v=>`<button class="chipb ${sv===v[0]?'sel':''}" data-f data-v="${v[0]}">${v[1]}${v[2]?` <span class="mu">${v[2]}</span>`:''}</button>`).join('')}</div>
+   <div class="lbl">Субтитры</div><div class="wrap"><button class="chipb sel" data-f>Не важно</button><button class="chipb" data-f>Нужны</button></div>
+   <div class="mu" style="margin:20px 4px 16px">Найдено 46 раздач · мёртвые и экранки скрыты</div>
+   <button class="btn pri" style="width:100%;justify-content:center;height:58px" data-f data-go2="1">${I.play}Смотреть</button>
+   <button class="btn sec" style="width:100%;justify-content:center;margin-top:10px" data-f data-man="1">Выбрать раздачу вручную</button>`;
+   const dl=document.getElementById('dlg');
+   dl.querySelectorAll('[data-q]').forEach(b=>b.onclick=ev=>{ev.stopPropagation();sq=b.dataset.q;draw();setF(dl.querySelector(`[data-q="${sq}"]`))});
+   dl.querySelectorAll('[data-v]').forEach(b=>b.onclick=ev=>{ev.stopPropagation();sv=b.dataset.v;draw();setF(dl.querySelector(`[data-v="${sv}"]`))});
+   dl.querySelector('[data-go2]').onclick=ev=>{ev.stopPropagation();searching(x,sq,sv)};
+   dl.querySelector('[data-man]').onclick=ev=>{ev.stopPropagation();closeOv();manual(x)};
+  };
+  openOv(); draw(); setTimeout(()=>setF(document.querySelector('#dlg .pri')),40);
+}
+function searching(x,q,v){
+  const steps=['Ищу раздачи…','Проверяю скорость раздач (1–3 из 9)…',`Запускаю: ${q||'1080p'} · ${v||'LostFilm'} · 12 ГБ`];
+  let i=0; const dl=document.getElementById('dlg');
+  const tick=()=>{ dl.innerHTML=`<div style="display:flex;align-items:center;gap:18px;padding:20px 6px"><div style="width:30px;height:30px;border-radius:15px;border:3px solid var(--mu);border-top-color:var(--tx);animation:spin 1s linear infinite"></div><div style="font-size:20px;font-weight:600">${steps[i]}</div></div><div class="mu" style="padding:0 6px">Приложение отсеивает мёртвые раздачи и запускает ту, что качается быстрее. Фильм не скачивается целиком.</div>`;
+    if(++i<steps.length) setTimeout(tick,900); else setTimeout(()=>{closeOv();openPlayer(x,false,v||'LostFilm')},800); };
+  tick();
+}
+function openOv(){document.getElementById('ov').classList.add('on')}
+function closeOv(){document.getElementById('ov').classList.remove('on');setTimeout(()=>F&&!document.body.contains(F)&&focusFirst(),10)}
+document.getElementById('ov').addEventListener('click',e=>{if(e.target.id==='ov')closeOv()});
+
+// ── Ручной выбор раздачи ───────────────────────────────────
+function manual(x){
+  const rel=[['1080p','LostFilm','BDRip','12 ГБ',214,'RuTracker'],['4K','Дубляж','WEB-DL · HDR','38 ГБ',96,'RuTracker'],['1080p','Многоголосый','WEB-DL','8.4 ГБ',152,'Rutor'],['720p','HDRezka','WEBRip','3.9 ГБ',61,'Rutor'],['4K','Оригинал','Remux · Dolby Vision · Atmos','71 ГБ',22,'Kinozal'],['1080p','Авторский','BDRip','10 ГБ',4,'Kinozal']];
+  let fq='';
+  const draw=()=>{ const sp=document.getElementById('sp'); const l=rel.filter(r=>!fq||r[0]===fq);
+   sp.innerHTML=`<div style="font-size:30px;font-weight:800">Выбор раздачи</div><div class="mu">${x.t} · ${x.y}</div>
+   <div class="lbl">Качество</div><div class="wrap">${['','4K','1080p','720p'].map(q=>`<button class="chipb ${fq===q?'sel':''}" data-f data-fq="${q}">${q||'Все'}</button>`).join('')}</div>
+   <div class="lbl">Озвучка · размер · источник · раздающие</div><div class="wrap"><button class="chipb" data-f>Любая</button><button class="chipb" data-f>до 15 ГБ</button><button class="chipb" data-f>Все трекеры</button><button class="chipb sel" data-f>От 1 раздающего</button></div>
+   <div class="lbl">Найдено ${l.length}</div>
+   ${l.map(r=>`<button class="row" data-f data-pick="1" style="align-items:flex-start;padding:12px 20px"><div style="flex:1"><div>${x.t} (${x.y}) ${r[2]} ${r[0]} | ${r[1]}</div><small>${r[0]} · ${r[3]} · ${r[5]} · ${r[1]}</small></div><div style="text-align:center;min-width:60px"><div style="font-size:18px;font-weight:800;color:${r[4]>=10?'#34c759':'inherit'}">${r[4]}</div><small>раздают</small></div></button>`).join('')}
+   <div class="lbl">Своя ссылка</div><input placeholder="magnet:?xt=… или .torrent" style="width:100%;height:52px;border-radius:26px;padding:0 22px;font:600 16px Inter;border:1px solid var(--st);background:var(--chip);color:var(--tx);outline:none">`;
+   sp.querySelectorAll('[data-fq]').forEach(b=>b.onclick=ev=>{ev.stopPropagation();fq=b.dataset.fq;draw();setF(sp.querySelector(`[data-fq="${fq}"]`))});
+   sp.querySelectorAll('[data-pick]').forEach(b=>b.onclick=ev=>{ev.stopPropagation();closeSp();openPlayer(x,false,'LostFilm')});
+  };
+  document.getElementById('sp').classList.add('on'); draw(); setTimeout(()=>setF(document.querySelector('#sp [data-f]')),60);
+}
+function closeSp(){document.getElementById('sp').classList.remove('on');setTimeout(()=>{if(!F||!document.body.contains(F)||F.closest('#sp'))focusFirst()},10)}
+
+// ── Фильтры ─────────────────────────────────────────────────
+function filters(){
+  const G=['Драма','Комедия','Криминал','Фантастика','Боевик','Фэнтези','Детектив','Приключения','Мелодрама'];
+  const draw=()=>{ const sp=document.getElementById('sp');
+   sp.innerHTML=`<div style="font-size:30px;font-weight:800">Фильтры</div><div class="mu">Нажмите жанр: один раз — включить, второй — исключить, третий — сбросить</div>
+   <div class="lbl">Жанры</div><div class="wrap">${G.map(g=>{const v=state.filters.g[g]||0;return `<button class="chipb ${v==1?'sel':v==-1?'ex':''}" data-f data-g="${g}">${v==1?'✓ ':v==-1?'✕ ':''}${g}</button>`}).join('')}</div>
+   <div class="lbl">Страны</div><div class="wrap">${['США','Россия','Великобритания','Франция','Все страны (196)'].map(c=>`<button class="chipb" data-f>${c}</button>`).join('')}</div>
+   <div class="lbl">Год: 1920 — 2026 · Рейтинг КП: от 7 · Моя оценка: любая</div>
+   <div style="height:6px;border-radius:3px;background:var(--chip);margin:14px 6px;position:relative"><i style="position:absolute;left:10%;right:0;top:0;bottom:0;background:var(--tx);border-radius:3px;opacity:.6"></i></div>
+   <button class="btn pri" style="width:100%;justify-content:center;margin-top:16px" data-f data-done="1">Показать</button>
+   <button class="btn sec" style="width:100%;justify-content:center;margin-top:10px" data-f data-reset="1">Сбросить всё</button>`;
+   sp.querySelectorAll('[data-g]').forEach(b=>b.onclick=ev=>{ev.stopPropagation();const g=b.dataset.g;const v=state.filters.g[g]||0;state.filters.g[g]=v==0?1:v==1?-1:0;draw();render(true);setF(sp.querySelector(`[data-g="${g}"]`))});
+   sp.querySelector('[data-done]').onclick=ev=>{ev.stopPropagation();closeSp()};
+   sp.querySelector('[data-reset]').onclick=ev=>{ev.stopPropagation();state.filters.g={};draw();render(true)};
+  };
+  document.getElementById('sp').classList.add('on'); draw(); setTimeout(()=>setF(document.querySelector('#sp [data-f]')),60);
+}
+
+// ── Плеер ──────────────────────────────────────────────────
+let pState=null, uiTimer=null;
+function openPlayer(x,trailer,voice){
+  pState={x,trailer,voice:voice||'Дубляж',pos:trailer?28:1841,dur:trailer?171:3300,play:true,panel:null,mode:'Обычный',sub:'Выключены',q:'1080p',speed:'Обычная'};
+  document.getElementById('pscene').style.backgroundImage=`url(${P(x.id)})`;
+  document.getElementById('player').classList.add('on'); drawPlayer(); pokeUi();
+  setTimeout(()=>setF(document.querySelector('#pui .pc.big')||document.querySelector('#pui [data-f]')),50);
+}
+function closePlayer(){ if(pState&&pState.panel){pState.panel=null;drawPlayer();return} document.getElementById('player').classList.remove('on'); pState=null; setTimeout(focusFirst,20); }
+function fmt(s){s=Math.max(0,Math.round(s));const h=Math.floor(s/3600),m=Math.floor(s%3600/60),x=s%60;return (h?h+':'+String(m).padStart(2,'0'):m)+':'+String(x).padStart(2,'0')}
+function pokeUi(){const u=document.getElementById('pui');u.classList.remove('hide');clearTimeout(uiTimer);uiTimer=setTimeout(()=>{if(pState&&pState.play&&!pState.panel)u.classList.add('hide')},4000)}
+document.getElementById('player').addEventListener('mousemove',pokeUi);
+setInterval(()=>{if(pState&&pState.play){pState.pos=Math.min(pState.dur,pState.pos+1);const tr=document.querySelector('#pui .ptrack i');if(tr){tr.style.width=(pState.pos/pState.dur*100)+'%';document.getElementById('pt1').textContent=fmt(pState.pos);document.getElementById('pt2').textContent='−'+fmt(pState.dur-pState.pos)}}},1000);
+function drawPlayer(){
+  const s=pState, x=s.x, tv=state.style==='tv';
+  const ctl=(sz,ic,act,big)=>`<button class="pc ${big?'big':''}" data-f data-pact="${act}" style="width:${sz}px;height:${sz}px">${ic}</button>`;
+  const center=`<div class="pctl">${x.s&&!s.trailer?ctl(64,'<svg width="24" height="24" viewBox="0 0 24 24"><path d="M7 5v14M19 5 9 12l10 7z" fill="#fff" stroke="#fff" stroke-width="1.5"/></svg>','prev'):''}${ctl(76,'<b style="font-size:17px">−10</b>','rw')}${ctl(100,s.play?'<svg width="34" height="34" viewBox="0 0 24 24"><rect x="6" y="5" width="4" height="14" rx="1.2" fill="#111"/><rect x="14" y="5" width="4" height="14" rx="1.2" fill="#111"/></svg>':'<svg width="34" height="34" viewBox="0 0 24 24"><path d="M7 4v16l13-8z" fill="#111"/></svg>','pp',1)}${ctl(76,'<b style="font-size:17px">+10</b>','ff')}${x.s&&!s.trailer?ctl(64,'<svg width="24" height="24" viewBox="0 0 24 24"><path d="M17 5v14M5 5l10 7-10 7z" fill="#fff" stroke="#fff" stroke-width="1.5"/></svg>','next'):''}</div>`;
+  const title = s.trailer?`Трейлер · ${x.t}`:(x.s?`${x.t} — Серия 2`:x.t);
+  const track=`<div class="ptrack" data-seek="1"><i style="width:${s.pos/s.dur*100}%"></i></div><div class="ptime"><span id="pt1">${fmt(s.pos)}</span><span id="pt2">−${fmt(s.dur-s.pos)}</span></div>`;
+  let bottom;
+  if(tv){
+    bottom=`<div class="pbottom"><div style="font-size:16px;color:rgba(255,255,255,.7);font-weight:600">${x.s&&!s.trailer?'Сезон 1 · Серия 2':x.y}</div>
+    <div style="display:flex;align-items:flex-end;justify-content:space-between;gap:20px"><div style="font-size:42px;font-weight:800;letter-spacing:-1px">${title}</div>
+    <div style="display:flex;gap:12px">${[['subs',I.subs,'Субтитры'],['audio',I.audio,'Звук и озвучка'],['set',I.gear,'Настройки'],['pip',I.pip,'Картинка в картинке']].map(b=>`<button class="pr ${s.panel===b[0]?'on':''}" data-f data-panel="${b[0]}" aria-label="${b[2]}">${b[1]}</button>`).join('')}</div></div>
+    ${track}<div class="pbtns"><button class="pb" data-f data-toast="Информация о фильме">Инфо</button>${x.s&&!s.trailer?'<button class="pb" data-f data-toast="Лента серий">Серии</button>':''}<button class="pb" data-f data-toast="Слушаю 12 секунд… Hans Zimmer — Cornfield Chase">${I.note}Что за песня?</button>${x.s&&!s.trailer?'<button class="pb" data-f data-toast="Заставка пропущена">Пропустить заставку</button>':''}</div></div>`;
+  } else {
+    bottom=`<div style="position:absolute;left:40px;top:30px;display:flex;align-items:center;gap:16px"><button class="pr" data-f data-pact="close" aria-label="Назад">‹</button><div><div style="font-size:24px;font-weight:800">${title}</div><div style="color:rgba(255,255,255,.7)">${s.voice} · ${s.q}</div></div></div>
+    <div class="pbottom">${track}<div class="pbtns" style="justify-content:space-between"><div style="display:flex;gap:10px"><button class="pb" data-f data-toast="Громкость (только на ПК)">🔊 80</button><button class="pb" data-f data-toast="Слушаю 12 секунд… Hans Zimmer — Cornfield Chase">${I.note}Что за песня?</button></div>
+    <div style="display:flex;gap:10px">${x.s&&!s.trailer?'<button class="pb" data-f data-toast="Лента серий">Серии</button>':''}<button class="pb ${s.panel?'on':''}" data-f data-panel="set" style="${s.panel?'background:#fff;color:#111':''}">${I.gear}Настройки</button><button class="pb" data-f data-toast="Картинка в картинке">${I.pip}</button><button class="pb" data-f data-toast="Полный экран">⛶</button></div></div></div>`;
+  }
+  const opt=(group,label,hint,on)=>`<button class="opt" data-f data-opt="${group}" data-val="${label}"><span class="ck">${on?'✓':''}</span><div>${label}${hint?`<small>${hint}</small>`:''}</div></button>`;
+  let panel='';
+  const audioP=()=>`<div class="sec">Режим звука</div>${['Обычный','Ночной','Чёткие голоса','Объём в наушниках'].map(m=>opt('mode',m,m==='Ночной'?'тише взрывы, громче голоса':'',s.mode===m)).join('')}<div class="sep"></div><div class="sec">Озвучка в этом файле</div>${opt('voice','Дубляж','Русский · Dolby Digital 5.1',s.voice==='Дубляж')}${opt('voice','Оригинал: английский','Dolby Atmos',s.voice==='Оригинал: английский')}<div class="sep"></div><div class="sec">Другие раздачи — переключение без потери места</div>${opt('alt','LostFilm','1080p · 9 ГБ · 214 раздают',s.voice==='LostFilm')}${opt('alt','HDRezka','720p · 4 ГБ · 61 раздают',s.voice==='HDRezka')}`;
+  const subsP=()=>`<div class="sec">Субтитры</div>${['Выключены','Русские','Русские (полные)','Английские'].map(m=>opt('sub',m,'',s.sub===m)).join('')}`;
+  const setP=()=>`<div class="sec">Качество</div>${opt('q','1080p','текущая раздача',s.q==='1080p')}${opt('q','4K','другая раздача · 38 ГБ',s.q==='4K')}${opt('q','720p','другая раздача · 3.9 ГБ',s.q==='720p')}<div class="sep"></div><div class="sec">Аудиоформат</div>${opt('fmt','Авто','',1)}${opt('fmt','Dolby Atmos / DTS на ресивер','',0)}<div class="sep"></div><div class="sec">Скорость</div>${['0.75×','Обычная','1.25×','1.5×'].map(v=>opt('speed',v,'',s.speed===v)).join('')}${x.s?`<div class="sep"></div><div class="sec">Заставка</div>${opt('intro','Начало заставки — здесь','',0)}${opt('intro','Конец заставки — здесь','',0)}`:''}`;
+  if(s.panel==='audio') panel=audioP(); else if(s.panel==='subs') panel=subsP(); else if(s.panel==='set') panel = tv?setP(): `<div class="sec">Дубляж</div>${opt('voice','Дубляж','',s.voice==='Дубляж')}${opt('voice','Оригинал: английский','',s.voice==='Оригинал: английский')}${opt('alt','LostFilm','другая раздача · 1080p',s.voice==='LostFilm')}<div class="sep"></div>`+subsP()+'<div class="sep"></div>'+setP()+'<div class="sep"></div><div class="sec">Режим звука</div>'+['Обычный','Ночной','Чёткие голоса'].map(m=>opt('mode',m,'',s.mode===m)).join('');
+  document.getElementById('pui').innerHTML = `<div style="position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,0,0,.4),transparent 25%,transparent 55%,rgba(0,0,0,.75))"></div>`+center+bottom+`<div class="ppanel ${s.panel?'on':''}" style="${!tv?'right:40px;top:110px;bottom:150px;max-height:none;background:rgba(30,30,36,.7)':''}">${panel}</div>`;
+  const pu=document.getElementById('pui');
+  pu.querySelectorAll('[data-pact]').forEach(b=>b.onclick=ev=>{ev.stopPropagation();const a=b.dataset.pact;
+    if(a==='pp'){s.play=!s.play;drawPlayer();setF(document.querySelector('#pui .pc.big'))}
+    if(a==='rw'){s.pos=Math.max(0,s.pos-10);toast('−10 секунд')} if(a==='ff'){s.pos+=10;toast('+10 секунд')}
+    if(a==='prev')toast('Предыдущая серия'); if(a==='next')toast('Следующая серия'); if(a==='close')closePlayer(); pokeUi();});
+  pu.querySelectorAll('[data-panel]').forEach(b=>b.onclick=ev=>{ev.stopPropagation();const p=b.dataset.panel;if(p==='pip'){toast('Картинка в картинке');return}s.panel=s.panel===p?null:p;drawPlayer();setF(document.querySelector('#pui .ppanel [data-f]')||document.querySelector(`#pui [data-panel="${p}"]`));pokeUi()});
+  pu.querySelectorAll('[data-opt]').forEach(b=>b.onclick=ev=>{ev.stopPropagation();const g=b.dataset.opt,v=b.dataset.val;
+    if(g==='mode')s.mode=v; if(g==='sub')s.sub=v; if(g==='speed')s.speed=v; if(g==='voice')s.voice=v; if(g==='intro')toast('Отмечено: '+v);
+    if(g==='q'){ if(v!==s.q){ toast(`Переключаю на ${v}… продолжим с ${fmt(s.pos)}`); } s.q=v; }
+    if(g==='alt'){ toast(`Переключаю на «${v}»… продолжим с ${fmt(s.pos)}`); s.voice=v; }
+    drawPlayer(); setF(document.querySelector(`#pui [data-opt="${g}"][data-val="${v}"]`)); });
+  const tr=pu.querySelector('[data-seek]'); tr.onclick=ev=>{const r=tr.getBoundingClientRect();s.pos=(ev.clientX-r.left)/r.width*s.dur;drawPlayer()};
+}
+
+// ── Стиль и часы ────────────────────────────────────────────
+document.querySelectorAll('#styler [data-style]').forEach(b=>b.addEventListener('click',()=>{}));
+function clock(){const d=new Date();document.getElementById('clk').textContent=String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0')}
+clock(); setInterval(clock,20000);
+const st=document.createElement('style');st.textContent='@keyframes spin{to{transform:rotate(360deg)}}';document.head.appendChild(st);
+render();
+// Если картинки Кинопоиска недоступны — показываем названия на цветных карточках
+const probe=new Image();probe.onerror=()=>document.head.insertAdjacentHTML('beforeend','<style>.card .nm{opacity:1}</style>');probe.src=P(301);
+</script>
+</body>
+</html>

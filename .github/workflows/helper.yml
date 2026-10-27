@@ -1,0 +1,62 @@
+name: Усиленный помощник (Byparr)
+# Отдельная загрузка для ПК: Byparr — современная замена FlareSolverr для проверки
+# Cloudflare «вы не робот». Собирается вручную и кладётся в релиз «byparr»
+# (пред-релиз, чтобы проверка обновлений его не видела). Программа скачивает его по кнопке.
+on: workflow_dispatch
+permissions:
+  contents: write
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - name: Сборка
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          pip install uv | Out-Null
+          git clone -q https://github.com/ThePhaseless/Byparr.git src
+          cd src; git checkout -q 6be4b57dd8df86a3659f477869ad89a42e0e0fc1; cd ..
+          uv python install 3.14
+          $py = (uv python find 3.14).Trim()
+          New-Item -ItemType Directory -Force byparr | Out-Null
+          Copy-Item (Split-Path $py) byparr/python -Recurse
+          cd src; uv export --no-dev --no-hashes --format requirements-txt -o ../req.txt; cd ..
+          uv pip install --python byparr/python/python.exe --break-system-packages -r req.txt
+          New-Item -ItemType Directory -Force byparr/app | Out-Null
+          Copy-Item src/main.py byparr/app/
+          Copy-Item src/src byparr/app/src -Recurse
+          $env:INVISIBLE_PLAYWRIGHT_CACHE_DIR = "$PWD\byparr\cache"
+          byparr/python/python.exe -m invisible_playwright fetch 2>&1 | Select-Object -Last 3
+          "6be4b57dd8df86a3659f477869ad89a42e0e0fc1" | Set-Content byparr/version.txt
+          # Лишнее: кеш байт-кода и тесты пакетов.
+          Get-ChildItem byparr -Recurse -Directory -Filter __pycache__ | Remove-Item -Recurse -Force
+          $size = [math]::Round(((Get-ChildItem byparr -Recurse -File | Measure-Object Length -Sum).Sum)/1MB)
+          7z a -tzip -mx=7 DeepCinema-Byparr.zip ./byparr/* | Out-Null
+          $zip = [math]::Round((Get-Item DeepCinema-Byparr.zip).Length/1MB)
+          Write-Output "::notice title=Размер::папка ${size} МБ, архив ${zip} МБ"
+      - name: Проверка из распакованной копии
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force t | Out-Null
+          tar -xf DeepCinema-Byparr.zip -C t
+          $env:INVISIBLE_PLAYWRIGHT_CACHE_DIR = "$PWD\t\cache"
+          $env:PORT = '8191'; $env:HOST = '127.0.0.1'; $env:LOG_LEVEL = 'info'
+          $p = Start-Process -FilePath t/python/python.exe -ArgumentList 'main.py' -WorkingDirectory t/app -PassThru -RedirectStandardError err.txt -RedirectStandardOutput out.txt
+          Start-Sleep 15
+          $t = Get-Date
+          try {
+            $body = @{ cmd = 'request.get'; url = 'https://example.com'; maxTimeout = 60000 } | ConvertTo-Json
+            $r = Invoke-RestMethod http://127.0.0.1:8191/v1 -Method Post -Body $body -ContentType 'application/json' -TimeoutSec 120
+            Write-Output "::notice title=Проверка::status=$($r.status) http=$($r.solution.status) $([math]::Round(((Get-Date)-$t).TotalSeconds)) с"
+            if ($r.status -ne 'ok') { throw 'не ok' }
+          } catch {
+            Write-Output "::error title=Проверка::$($_.Exception.Message) | $((Get-Content err.txt -Tail 10) -join ' | ')"
+            exit 1
+          } finally { Stop-Process -Id $p.Id -Force -ErrorAction SilentlyContinue }
+      - name: В релиз «byparr»
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release view byparr --repo $GITHUB_REPOSITORY >/dev/null 2>&1 || gh release create byparr --repo $GITHUB_REPOSITORY --prerelease --title "Усиленный помощник (Byparr)" --notes "Отдельная загрузка для Deep Cinema на ПК. Скачивается из программы: Настройки → Поиск раздач."
+          gh release upload byparr DeepCinema-Byparr.zip --clobber --repo $GITHUB_REPOSITORY
