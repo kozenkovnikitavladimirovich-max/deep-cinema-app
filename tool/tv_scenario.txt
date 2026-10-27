@@ -41,17 +41,19 @@ wait 2
 key BACK
 wait 2
 shot back-to-settings
-# Аккаунт и окно входа
+# Аккаунт и окно входа (Настройки → Главная → меню → Аккаунт)
+key BACK
+wait 2
 key BACK
 wait 2
 shot menu2
-key DPAD_UP
+key DPAD_DOWN 4
 key DPAD_CENTER
 wait 3
 shot account
-key DPAD_DOWN 2
-shot account-down2
-key DPAD_UP 2
+key DPAD_DOWN
+shot account-down1
+key DPAD_UP
 key DPAD_CENTER
 wait 2
 shot dialog-loading
@@ -66,3 +68,5 @@ shot dialog-left
 key BACK
 wait 2
 shot dialog-closed
+key DPAD_DOWN
+shot account-after-dialog

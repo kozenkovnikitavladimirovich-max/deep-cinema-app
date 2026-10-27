@@ -175,7 +175,7 @@ class _CatalogScreenState extends State<CatalogScreen> {
                     onTap: () => FilterSheet.show(context, filters, showType: _isMy),
                   ),
                   if (_isMy)
-                    Container(
+                    FocusRing(radius: 25, child: Container(
                       width: 360,
                       height: 50,
                       padding: const EdgeInsets.only(left: 18, right: 6),
@@ -197,7 +197,7 @@ class _CatalogScreenState extends State<CatalogScreen> {
                         if (_search.text.isNotEmpty)
                           Focusable(onTap: () => _search.clear(), radius: 20, child: SizedBox(width: 40, height: 40, child: Icon(Icons.close_rounded, color: c.text))),
                       ]),
-                    ),
+                    )),
                 ]),
               ),
             ]),

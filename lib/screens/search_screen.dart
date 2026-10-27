@@ -112,7 +112,7 @@ class _SearchScreenState extends State<SearchScreen> {
           Center(child: Text('Поиск', style: TextStyle(fontSize: 44, fontWeight: FontWeight.w700, color: c.muted, letterSpacing: -.8))),
           const SizedBox(height: 22),
           Center(
-            child: Container(
+            child: FocusRing(radius: 32, child: Container(
               width: 760,
               height: 64,
               padding: const EdgeInsets.only(left: 24, right: 10),
@@ -149,7 +149,7 @@ class _SearchScreenState extends State<SearchScreen> {
                     _field.requestFocus();
                   }),
               ]),
-            ),
+            )),
           ),
           if (TvKeyboard.enabled) ...[
             const SizedBox(height: 18),

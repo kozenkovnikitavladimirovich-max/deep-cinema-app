@@ -1,3 +1,4 @@
+import 'dart:io' show Platform;
 import 'dart:ui' show ImageFilter;
 
 import 'package:flutter/material.dart';
@@ -316,7 +317,7 @@ class GlassField extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final c = context.dc;
-    return Container(
+    return FocusRing(radius: 30, child: Container(
       height: 60,
       padding: const EdgeInsets.symmetric(horizontal: 24),
       alignment: Alignment.centerLeft,
@@ -343,7 +344,7 @@ class GlassField extends StatelessWidget {
           decoration: InputDecoration(border: InputBorder.none, isDense: true, hintText: hint, hintStyle: TextStyle(color: c.muted)),
         ),
       ),
-    );
+    ));
   }
 }
 
@@ -403,4 +404,53 @@ Future<bool> confirmExit(BuildContext context) async {
     ]);
   });
   return r ?? false;
+}
+
+/// Белая рамка вокруг поля ввода, когда на нём стоит пульт (только ТВ): иначе
+/// не видно, что выбрано поле. Сама фокус не берёт и на переходы не влияет.
+class FocusRing extends StatefulWidget {
+  const FocusRing({super.key, required this.radius, required this.child});
+  final double radius;
+  final Widget child;
+
+  @override
+  State<FocusRing> createState() => _FocusRingState();
+}
+
+class _FocusRingState extends State<FocusRing> {
+  bool _in = false;
+
+  static bool get _tv {
+    try {
+      return Platform.isAndroid;
+    } catch (_) {
+      return false;
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (!_tv) return widget.child;
+    return Focus(
+      canRequestFocus: false,
+      skipTraversal: true,
+      onFocusChange: (f) {
+        if (f != _in) setState(() => _in = f);
+      },
+      child: Stack(children: [
+        widget.child,
+        if (_in)
+          Positioned.fill(
+            child: IgnorePointer(
+              child: DecoratedBox(
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(widget.radius),
+                  border: Border.all(color: context.dc.text, width: 2.5),
+                ),
+              ),
+            ),
+          ),
+      ]),
+    );
+  }
 }

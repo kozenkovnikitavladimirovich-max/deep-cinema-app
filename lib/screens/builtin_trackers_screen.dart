@@ -186,9 +186,8 @@ class _BuiltinTrackersScreenState extends State<BuiltinTrackersScreen> {
               },
             ),
           const GroupLabel('Добавить трекер'),
-          Container(
+          Padding(padding: const EdgeInsets.only(bottom: 10), child: FocusRing(radius: 29, child: Container(
             height: 58,
-            margin: const EdgeInsets.only(bottom: 10),
             padding: const EdgeInsets.symmetric(horizontal: 22),
             decoration: BoxDecoration(color: matteFor(context), borderRadius: BorderRadius.circular(29), border: Border.all(color: c.stroke)),
             child: Row(children: [
@@ -211,7 +210,7 @@ class _BuiltinTrackersScreenState extends State<BuiltinTrackersScreen> {
                 ),
               ),
             ]),
-          ),
+          ))),
           if (q.isEmpty)
             SwitchRow(title: 'Только русскоязычные', value: _onlyRu, onChanged: (v) => setState(() => _onlyRu = v)),
           if (cat == null)
@@ -305,7 +304,7 @@ class _BuiltinFormState extends State<_BuiltinForm> {
       padding: const EdgeInsets.only(bottom: 12),
       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
         Padding(padding: const EdgeInsets.only(left: 8, bottom: 6), child: Text(label, style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: c.muted))),
-        Container(
+        FocusRing(radius: 28, child: Container(
           height: 56,
           padding: const EdgeInsets.symmetric(horizontal: 22),
           alignment: Alignment.centerLeft,
@@ -326,7 +325,7 @@ class _BuiltinFormState extends State<_BuiltinForm> {
               decoration: const InputDecoration(border: InputBorder.none, isDense: true),
             )),
           ),
-        ),
+        )),
       ]),
     );
   }
