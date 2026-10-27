@@ -38,7 +38,7 @@ jobs:
           flutter pub get >> build.log 2>&1
           flutter analyze --no-fatal-infos --no-fatal-warnings > analyze.txt 2>&1 || true
           grep -E "error •" analyze.txt | head -30 | while read -r l; do echo "::error title=analyze::$l"; done || true
-          flutter build apk --release --target-platform android-x64 --dart-define=APP_VERSION=9.9.9 --dart-define=DC_FOCUS_LOG=true >> build.log 2>&1 || { echo "::error title=APK::$(tail -n 40 build.log | sed ':a;N;$!ba;s/%/%25/g;s/\r//g;s/\n/%0A/g')"; exit 1; }
+          flutter build apk --release --target-platform android-x64 --dart-define=APP_VERSION=9.9.9 --dart-define=DC_FOCUS_LOG=true --dart-define=DC_DEMO=true >> build.log 2>&1 || { echo "::error title=APK::$(tail -n 40 build.log | sed ':a;N;$!ba;s/%/%25/g;s/\r//g;s/\n/%0A/g')"; exit 1; }
       - name: KVM
         run: |
           echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
