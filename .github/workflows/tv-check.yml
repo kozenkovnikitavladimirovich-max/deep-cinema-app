@@ -38,7 +38,7 @@ jobs:
           flutter pub get >> build.log 2>&1
           flutter analyze --no-fatal-infos --no-fatal-warnings > analyze.txt 2>&1 || true
           grep -E "error •" analyze.txt | head -30 | while read -r l; do echo "::error title=analyze::$l"; done || true
-          flutter build apk --release --target-platform android-x64 --dart-define=APP_VERSION=0.0.0-test >> build.log 2>&1 || { echo "::error title=APK::$(tail -n 40 build.log | sed ':a;N;$!ba;s/%/%25/g;s/\r//g;s/\n/%0A/g')"; exit 1; }
+          flutter build apk --release --target-platform android-x64 --dart-define=APP_VERSION=9.9.9 --dart-define=DC_FOCUS_LOG=true >> build.log 2>&1 || { echo "::error title=APK::$(tail -n 40 build.log | sed ':a;N;$!ba;s/%/%25/g;s/\r//g;s/\n/%0A/g')"; exit 1; }
       - name: KVM
         run: |
           echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
@@ -50,11 +50,12 @@ jobs:
           arch: x86_64
           target: google_apis
           disable-animations: true
-          emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -no-snapshot
+          emulator-options: -skin 1920x1080 -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -no-snapshot
           script: bash tool/tv_check.sh build/app/outputs/flutter-apk/app-release.apk
       - name: Ошибки программы
         if: always()
         run: |
+          grep -c DCFOCUS shots/flutter.log || true
           grep -iE "exception|error" shots/flutter.log | head -15 | while read -r l; do echo "::warning title=flutter::$(echo "$l" | cut -c1-300)"; done || true
       - name: В ветку tv-shots
         if: always()

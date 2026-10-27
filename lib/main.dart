@@ -38,6 +38,29 @@ Future<void> main() async {
       return dup;
     });
   }
+  // Только для стенда проверки пульта (--dart-define=DC_FOCUS_LOG=true): после каждой
+  // кнопки пишет в журнал, какой элемент в фокусе. В обычной сборке выключено.
+  if (const bool.fromEnvironment('DC_FOCUS_LOG')) {
+    HardwareKeyboard.instance.addHandler((e) {
+      if (e is KeyDownEvent) {
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          final p = FocusManager.instance.primaryFocus;
+          final chain = <String>[];
+          p?.context?.visitAncestorElements((el) {
+            chain.add('${el.widget.runtimeType}');
+            return chain.length < 6;
+          });
+          final r = p?.rect;
+          debugPrint('DCFOCUS key=${e.logicalKey.keyLabel} mode=${FocusManager.instance.highlightMode.name} '
+              'node=${p?.debugLabel ?? p?.runtimeType} '
+              'rect=${r == null ? '-' : '${r.left.round()},${r.top.round()} ${r.width.round()}x${r.height.round()}'} '
+              'widget=${p?.context?.widget.runtimeType} up=${chain.join('<')}');
+        });
+        WidgetsBinding.instance.scheduleFrame();
+      }
+      return false;
+    });
+  }
   MediaKit.ensureInitialized();
   await AppSettings.instance.load();
   await DataStore.load();

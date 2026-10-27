@@ -15,7 +15,6 @@ adb wait-for-device
 adb shell settings put global window_animation_scale 0
 adb shell settings put global transition_animation_scale 0
 adb shell settings put global animator_duration_scale 0
-adb shell wm size 1920x1080
 adb shell wm density 320
 adb install -r -g "$APK" > shots/install.log 2>&1 || { cat shots/install.log; exit 1; }
 n=0
@@ -34,7 +33,7 @@ while IFS= read -r -u 3 line || [ -n "$line" ]; do
     wait) sleep "$2" ;;
     key) c=${3:-1}; for _ in $(seq "$c"); do adb shell input keyevent "KEYCODE_$2" < /dev/null; sleep 0.7; done; sleep 1 ;;
     text) shift; adb shell input text "$(echo "$*" | sed 's/ /%s/g')"; sleep 1 ;;
-    shot) n=$((n+1)); f=$(printf 'shots/%02d-%s.png' $n "$2"); adb exec-out screencap -p > "$f"; echo "снят $f" ;;
+    shot) adb shell log -t flutter "DCSHOT $2" < /dev/null; n=$((n+1)); f=$(printf 'shots/%02d-%s.png' $n "$2"); adb exec-out screencap -p > "$f"; echo "снят $f" ;;
   esac
 done
 adb logcat -d -s flutter:V > shots/flutter.log 2>&1 || true
