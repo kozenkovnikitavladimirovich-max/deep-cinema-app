@@ -31,22 +31,27 @@ class SideButtons {
         final rest = d.buttons & ~_side;
         if (d.change == ui.PointerChange.down && side != 0 && rest == 0) {
           // Нажата только боковая кнопка: «назад» сразу, движку — обычное движение мыши.
+          // Само нажатие движку не передаём (иначе в плеере оно выглядело бы как движение
+          // мыши и снова показывало панель).
           if (sideDown.add(d.device) && (side & kBackMouseButton) != 0) scheduleMicrotask(() => onBack?.call());
-          out.add(_hover(d));
           changed = true;
-        } else if (sideDown.contains(d.device) && (d.change == ui.PointerChange.up || d.change == ui.PointerChange.move)) {
-          if (d.change == ui.PointerChange.up || side == 0) sideDown.remove(d.device);
-          if (rest == 0) {
-            out.add(_hover(d));
-          } else {
-            out.add(d); // вместе с боковой зажата и обычная кнопка — отдаём как есть
-          }
+        } else if (sideDown.contains(d.device) && d.change == ui.PointerChange.up) {
+          sideDown.remove(d.device); // отпускание тоже не передаём
+          changed = true;
+        } else if (sideDown.contains(d.device) && d.change == ui.PointerChange.move) {
+          if (side == 0) sideDown.remove(d.device);
+          // Мышь двигают с зажатой боковой кнопкой — для движка это обычное движение.
+          out.add(rest == 0 ? _hover(d) : d);
           changed = true;
         } else {
           out.add(d);
         }
       }
-      original(changed ? ui.PointerDataPacket(data: out) : packet);
+      if (!changed) {
+        original(packet);
+      } else if (out.isNotEmpty) {
+        original(ui.PointerDataPacket(data: out));
+      }
     };
   }
 
