@@ -1,0 +1,306 @@
+
+(app.deepcinema.deep_cinema:13777): dbind-WARNING **: 22:03:34.236: AT-SPI: Error retrieving accessibility bus address: org.freedesktop.DBus.Error.ServiceUnknown: The name org.a11y.Bus was not provided by any .service files
+libEGL warning: DRI3 error: Could not get DRI3 device
+libEGL warning: Ensure your X server supports DRI3 to get accelerated rendering
+
+(app.deepcinema.deep_cinema:13777): Atk-CRITICAL **: 22:03:34.769: atk_socket_embed: assertion 'plug_id != NULL' failed
+[IMPORTANT:flutter/shell/platform/embedder/embedder_surface_gl_impeller.cc(126)] Using the Impeller rendering backend (OpenGLESSDF).
+package:media_kit_libs_linux registered.
+
+(app.deepcinema.deep_cinema:13777): libayatana-appindicator-WARNING **: 22:03:35.419: libayatana-appindicator is deprecated. Please use libayatana-appindicator-glib in newly written code.
+tray init: MissingPluginException(No implementation found for method setToolTip on channel tray_manager)
+images via: direct
+[W][22:03:37.270090] pw.conf      | [          conf.c: 1182 try_load_conf()] can't load config client.conf: No such file or directory
+[E][22:03:37.270173] pw.conf      | [          conf.c: 1215 pw_conf_load_conf_for_context()] can't load config client.conf: No such file or directory
+[W][22:03:37.376941] pw.conf      | [          conf.c: 1182 try_load_conf()] can't load config client.conf: No such file or directory
+[E][22:03:37.376992] pw.conf      | [          conf.c: 1215 pw_conf_load_conf_for_context()] can't load config client.conf: No such file or directory
+ALSA lib confmisc.c:855:(parse_card) [error.core] cannot find card '0'
+ALSA lib conf.c:5211:(_snd_config_evaluate) [error.core] function snd_func_card_inum returned error: No such file or directory
+ALSA lib confmisc.c:422:(snd_func_concat) [error.core] error evaluating strings
+ALSA lib conf.c:5211:(_snd_config_evaluate) [error.core] function snd_func_concat returned error: No such file or directory
+ALSA lib confmisc.c:1342:(snd_func_refer) [error.core] error evaluating name
+ALSA lib conf.c:5211:(_snd_config_evaluate) [error.core] function snd_func_refer returned error: No such file or directory
+ALSA lib conf.c:5734:(snd_config_expand) [error.core] Evaluate error: No such file or directory
+ALSA lib pcm.c:2722:(snd_pcm_open_noupdate) [error.pcm] Unknown PCM default
+Cannot connect to server socket err = No such file or directory
+Cannot connect to server request channel
+jack server is not running or cannot be started
+JackShmReadWritePtr::~JackShmReadWritePtr - Init not done for -1, skipping unlock
+JackShmReadWritePtr::~JackShmReadWritePtr - Init not done for -1, skipping unlock
+ALSA lib confmisc.c:165:(snd_config_get_card) [error.core] Cannot get card index for 0
+couldn't open play stream: No such file or directory
+[W][22:03:37.703292] pw.conf      | [          conf.c: 1182 try_load_conf()] can't load config client.conf: No such file or directory
+[E][22:03:37.703343] pw.conf      | [          conf.c: 1215 pw_conf_load_conf_for_context()] can't load config client.conf: No such file or directory
+media_kit: VideoOutput: EGL display or context is invalid.
+media_kit: VideoOutput: S/W rendering.
+VideoOutput.Resize
+{handle: 99063511530000, id: 99063518441264, rect: {left: 0, top: 0, width: 1, height: 1}}
+NativeVideoController: Texture ID: 99063518441264
+Failed to open VDPAU backend libvdpau_nvidia.so: cannot open shared object file: No such file or directory
+[W][22:03:37.777020] pw.conf      | [          conf.c: 1182 try_load_conf()] can't load config client.conf: No such file or directory
+[E][22:03:37.777079] pw.conf      | [          conf.c: 1215 pw_conf_load_conf_for_context()] can't load config client.conf: No such file or directory
+ALSA lib confmisc.c:855:(parse_card) [error.core] cannot find card '0'
+ALSA lib conf.c:5211:(_snd_config_evaluate) [error.core] function snd_func_card_inum returned error: No such file or directory
+ALSA lib confmisc.c:422:(snd_func_concat) [error.core] error evaluating strings
+ALSA lib conf.c:5211:(_snd_config_evaluate) [error.core] function snd_func_concat returned error: No such file or directory
+ALSA lib confmisc.c:1342:(snd_func_refer) [error.core] error evaluating name
+ALSA lib conf.c:5211:(_snd_config_evaluate) [error.core] function snd_func_refer returned error: No such file or directory
+ALSA lib conf.c:5734:(snd_config_expand) [error.core] Evaluate error: No such file or directory
+ALSA lib pcm.c:2722:(snd_pcm_open_noupdate) [error.pcm] Unknown PCM default
+Cannot connect to server socket err = No such file or directory
+Cannot connect to server request channel
+jack server is not running or cannot be started
+JackShmReadWritePtr::~JackShmReadWritePtr - Init not done for -1, skipping unlock
+JackShmReadWritePtr::~JackShmReadWritePtr - Init not done for -1, skipping unlock
+ALSA lib confmisc.c:165:(snd_config_get_card) [error.core] Cannot get card index for 0
+couldn't open play stream: No such file or directory
+player error: Could not open/initialize audio device -> no sound.
+VideoOutput.Resize
+{handle: 99063511530000, id: 99063518441264, rect: {left: 0, top: 0, width: 1280, height: 720}}
+[ERROR:flutter/runtime/dart_vm_initializer.cc(40)] Unhandled Exception: Не указан ключ Кинопоиска — Настройки → Ключи сервисов (или войдите в аккаунт, где ключи уже сохранены)
+#0      Kinopoisk._load (package:deep_cinema/data/kinopoisk.dart:94)
+<asynchronous suspension>
+#1      Kinopoisk._get.<anonymous closure> (package:deep_cinema/data/kinopoisk.dart:82)
+<asynchronous suspension>
+#2      Kinopoisk.collection (package:deep_cinema/data/kinopoisk.dart:299)
+<asynchronous suspension>
+#3      Kinopoisk.trending (package:deep_cinema/data/kinopoisk.dart:302)
+<asynchronous suspension>
+#4      Future.wait.<anonymous closure> (dart:async/future.dart:567)
+<asynchronous suspension>
+#5      _HomeScreenState._load (package:deep_cinema/screens/home_screen.dart:116)
+<asynchronous suspension>
+#6      _FutureBuilderState._subscribe.<anonymous closure> (package:flutter/src/widgets/async.dart:641)
+<asynchronous suspension>
+
+[ERROR:flutter/runtime/dart_vm_initializer.cc(40)] Unhandled Exception: Не указан ключ Кинопоиска — Настройки → Ключи сервисов (или войдите в аккаунт, где ключи уже сохранены)
+#0      Kinopoisk._load (package:deep_cinema/data/kinopoisk.dart:94)
+<asynchronous suspension>
+#1      Kinopoisk._get.<anonymous closure> (package:deep_cinema/data/kinopoisk.dart:82)
+<asynchronous suspension>
+#2      Kinopoisk.collection (package:deep_cinema/data/kinopoisk.dart:299)
+<asynchronous suspension>
+#3      Kinopoisk.trending (package:deep_cinema/data/kinopoisk.dart:302)
+<asynchronous suspension>
+#4      Future.wait.<anonymous closure> (dart:async/future.dart:567)
+<asynchronous suspension>
+#5      _HomeScreenState._load (package:deep_cinema/screens/home_screen.dart:116)
+<asynchronous suspension>
+#6      _FutureBuilderState._subscribe.<anonymous closure> (package:flutter/src/widgets/async.dart:641)
+<asynchronous suspension>
+
+DCHOVER set=true mouseActive=true Instance of 'Size'
+DCHOVER apply=true mouseActive=true mounted=true
+DCHOVER set=false mouseActive=true Instance of 'Size'
+DCHOVER apply=false mouseActive=true mounted=true
+DCHOVER set=true mouseActive=true Instance of 'Size'
+DCHOVER apply=true mouseActive=true mounted=true
+DCSHOT player-hover-back
+DCHOVER set=false mouseActive=false Instance of 'Size'
+DCHOVER apply=false mouseActive=false mounted=true
+[W][22:04:01.654751] pw.conf      | [          conf.c: 1182 try_load_conf()] can't load config client.conf: No such file or directory
+[E][22:04:01.654803] pw.conf      | [          conf.c: 1215 pw_conf_load_conf_for_context()] can't load config client.conf: No such file or directory
+[W][22:04:01.919991] pw.conf      | [          conf.c: 1182 try_load_conf()] can't load config client.conf: No such file or directory
+[E][22:04:01.920059] pw.conf      | [          conf.c: 1215 pw_conf_load_conf_for_context()] can't load config client.conf: No such file or directory
+ALSA lib confmisc.c:855:(parse_card) [error.core] cannot find card '0'
+ALSA lib conf.c:5211:(_snd_config_evaluate) [error.core] function snd_func_card_inum returned error: No such file or directory
+ALSA lib confmisc.c:422:(snd_func_concat) [error.core] error evaluating strings
+ALSA lib conf.c:5211:(_snd_config_evaluate) [error.core] function snd_func_concat returned error: No such file or directory
+ALSA lib confmisc.c:1342:(snd_func_refer) [error.core] error evaluating name
+ALSA lib conf.c:5211:(_snd_config_evaluate) [error.core] function snd_func_refer returned error: No such file or directory
+ALSA lib conf.c:5734:(snd_config_expand) [error.core] Evaluate error: No such file or directory
+ALSA lib pcm.c:2722:(snd_pcm_open_noupdate) [error.pcm] Unknown PCM default
+Cannot connect to server socket err = No such file or directory
+Cannot connect to server request channel
+jack server is not running or cannot be started
+JackShmReadWritePtr::~JackShmReadWritePtr - Init not done for -1, skipping unlock
+JackShmReadWritePtr::~JackShmReadWritePtr - Init not done for -1, skipping unlock
+ALSA lib confmisc.c:165:(snd_config_get_card) [error.core] Cannot get card index for 0
+couldn't open play stream: No such file or directory
+[ERROR:flutter/runtime/dart_vm_initializer.cc(40)] Unhandled Exception: Не указан ключ Кинопоиска — Настройки → Ключи сервисов (или войдите в аккаунт, где ключи уже сохранены)
+#0      Kinopoisk._load (package:deep_cinema/data/kinopoisk.dart:94)
+<asynchronous suspension>
+#1      Kinopoisk._get.<anonymous closure> (package:deep_cinema/data/kinopoisk.dart:82)
+<asynchronous suspension>
+#2      Kinopoisk.collection (package:deep_cinema/data/kinopoisk.dart:299)
+<asynchronous suspension>
+#3      Kinopoisk.trending (package:deep_cinema/data/kinopoisk.dart:302)
+<asynchronous suspension>
+#4      Future.wait.<anonymous closure> (dart:async/future.dart:567)
+<asynchronous suspension>
+#5      _HomeScreenState._load (package:deep_cinema/screens/home_screen.dart:116)
+<asynchronous suspension>
+#6      _FutureBuilderState._subscribe.<anonymous closure> (package:flutter/src/widgets/async.dart:641)
+<asynchronous suspension>
+
+DCHOVER set=true mouseActive=false Instance of 'Size'
+DCHOVER apply=true mouseActive=false mounted=true
+[W][22:04:04.003671] pw.conf      | [          conf.c: 1182 try_load_conf()] can't load config client.conf: No such file or directory
+[E][22:04:04.004184] pw.conf      | [          conf.c: 1215 pw_conf_load_conf_for_context()] can't load config client.conf: No such file or directory
+ALSA lib confmisc.c:855:(parse_card) [error.core] cannot find card '0'
+ALSA lib conf.c:5211:(_snd_config_evaluate) [error.core] function snd_func_card_inum returned error: No such file or directory
+ALSA lib confmisc.c:422:(snd_func_concat) [error.core] error evaluating strings
+ALSA lib conf.c:5211:(_snd_config_evaluate) [error.core] function snd_func_concat returned error: No such file or directory
+ALSA lib confmisc.c:1342:(snd_func_refer) [error.core] error evaluating name
+ALSA lib conf.c:5211:(_snd_config_evaluate) [error.core] function snd_func_refer returned error: No such file or directory
+ALSA lib conf.c:5734:(snd_config_expand) [error.core] Evaluate error: No such file or directory
+ALSA lib pcm.c:2722:(snd_pcm_open_noupdate) [error.pcm] Unknown PCM default
+Cannot connect to server socket err = No such file or directory
+Cannot connect to server request channel
+jack server is not running or cannot be started
+JackShmReadWritePtr::~JackShmReadWritePtr - Init not done for -1, skipping unlock
+JackShmReadWritePtr::~JackShmReadWritePtr - Init not done for -1, skipping unlock
+ALSA lib confmisc.c:165:(snd_config_get_card) [error.core] Cannot get card index for 0
+couldn't open play stream: No such file or directory
+[W][22:04:04.117618] pw.conf      | [          conf.c: 1182 try_load_conf()] can't load config client.conf: No such file or directory
+[E][22:04:04.117862] pw.conf      | [          conf.c: 1215 pw_conf_load_conf_for_context()] can't load config client.conf: No such file or directory
+ALSA lib confmisc.c:855:(parse_card) [error.core] cannot find card '0'
+ALSA lib conf.c:5211:(_snd_config_evaluate) [error.core] function snd_func_card_inum returned error: No such file or directory
+ALSA lib confmisc.c:422:(snd_func_concat) [error.core] error evaluating strings
+ALSA lib conf.c:5211:(_snd_config_evaluate) [error.core] function snd_func_concat returned error: No such file or directory
+ALSA lib confmisc.c:1342:(snd_func_refer) [error.core] error evaluating name
+ALSA lib conf.c:5211:(_snd_config_evaluate) [error.core] function snd_func_refer returned error: No such file or directory
+ALSA lib conf.c:5734:(snd_config_expand) [error.core] Evaluate error: No such file or directory
+ALSA lib pcm.c:2722:(snd_pcm_open_noupdate) [error.pcm] Unknown PCM default
+Cannot connect to server socket err = No such file or directory
+Cannot connect to server request channel
+jack server is not running or cannot be started
+JackShmReadWritePtr::~JackShmReadWritePtr - Init not done for -1, skipping unlock
+JackShmReadWritePtr::~JackShmReadWritePtr - Init not done for -1, skipping unlock
+ALSA lib confmisc.c:165:(snd_config_get_card) [error.core] Cannot get card index for 0
+couldn't open play stream: No such file or directory
+DCSHOT after-exit
+DCHOVER set=false mouseActive=false Instance of 'Size'
+DCHOVER apply=false mouseActive=true mounted=true
+DCHOVER set=true mouseActive=true Instance of 'Size'
+DCHOVER apply=true mouseActive=true mounted=true
+DCSHOT hover-retry-button
+DCHOVER set=false mouseActive=false Instance of 'Size'
+DCHOVER apply=false mouseActive=true mounted=true
+DCHOVER set=true mouseActive=true Instance of 'Size'
+DCHOVER apply=true mouseActive=true mounted=true
+[ERROR:flutter/runtime/dart_vm_initializer.cc(40)] Unhandled Exception: Не указан ключ Кинопоиска — Настройки → Ключи сервисов (или войдите в аккаунт, где ключи уже сохранены)
+#0      Kinopoisk._load (package:deep_cinema/data/kinopoisk.dart:94)
+<asynchronous suspension>
+#1      Kinopoisk._get.<anonymous closure> (package:deep_cinema/data/kinopoisk.dart:82)
+<asynchronous suspension>
+#2      Kinopoisk.collection (package:deep_cinema/data/kinopoisk.dart:299)
+<asynchronous suspension>
+#3      Kinopoisk.trending (package:deep_cinema/data/kinopoisk.dart:302)
+<asynchronous suspension>
+#4      Future.wait.<anonymous closure> (dart:async/future.dart:567)
+<asynchronous suspension>
+#5      _HomeScreenState._load (package:deep_cinema/screens/home_screen.dart:116)
+<asynchronous suspension>
+#6      _FutureBuilderState._subscribe.<anonymous closure> (package:flutter/src/widgets/async.dart:641)
+<asynchronous suspension>
+
+DCSHOT hover-menu-capsule
+DCHOVER set=false mouseActive=false Instance of 'Size'
+DCHOVER apply=false mouseActive=false mounted=true
+[W][22:04:12.120954] pw.conf      | [          conf.c: 1182 try_load_conf()] can't load config client.conf: No such file or directory
+[E][22:04:12.121007] pw.conf      | [          conf.c: 1215 pw_conf_load_conf_for_context()] can't load config client.conf: No such file or directory
+ALSA lib confmisc.c:855:(parse_card) [error.core] cannot find card '0'
+ALSA lib conf.c:5211:(_snd_config_evaluate) [error.core] function snd_func_card_inum returned error: No such file or directory
+ALSA lib confmisc.c:422:(snd_func_concat) [error.core] error evaluating strings
+ALSA lib conf.c:5211:(_snd_config_evaluate) [error.core] function snd_func_concat returned error: No such file or directory
+ALSA lib confmisc.c:1342:(snd_func_refer) [error.core] error evaluating name
+ALSA lib conf.c:5211:(_snd_config_evaluate) [error.core] function snd_func_refer returned error: No such file or directory
+ALSA lib conf.c:5734:(snd_config_expand) [error.core] Evaluate error: No such file or directory
+ALSA lib pcm.c:2722:(snd_pcm_open_noupdate) [error.pcm] Unknown PCM default
+Cannot connect to server socket err = No such file or directory
+Cannot connect to server request channel
+jack server is not running or cannot be started
+JackShmReadWritePtr::~JackShmReadWritePtr - Init not done for -1, skipping unlock
+JackShmReadWritePtr::~JackShmReadWritePtr - Init not done for -1, skipping unlock
+ALSA lib confmisc.c:165:(snd_config_get_card) [error.core] Cannot get card index for 0
+couldn't open play stream: No such file or directory
+[W][22:04:12.143013] pw.conf      | [          conf.c: 1182 try_load_conf()] can't load config client.conf: No such file or directory
+[E][22:04:12.143065] pw.conf      | [          conf.c: 1215 pw_conf_load_conf_for_context()] can't load config client.conf: No such file or directory
+ALSA lib confmisc.c:855:(parse_card) [error.core] cannot find card '0'
+ALSA lib conf.c:5211:(_snd_config_evaluate) [error.core] function snd_func_card_inum returned error: No such file or directory
+ALSA lib confmisc.c:422:(snd_func_concat) [error.core] error evaluating strings
+ALSA lib conf.c:5211:(_snd_config_evaluate) [error.core] function snd_func_concat returned error: No such file or directory
+ALSA lib confmisc.c:1342:(snd_func_refer) [error.core] error evaluating name
+ALSA lib conf.c:5211:(_snd_config_evaluate) [error.core] function snd_func_refer returned error: No such file or directory
+ALSA lib conf.c:5734:(snd_config_expand) [error.core] Evaluate error: No such file or directory
+ALSA lib pcm.c:2722:(snd_pcm_open_noupdate) [error.pcm] Unknown PCM default
+Cannot connect to server socket err = No such file or directory
+Cannot connect to server request channel
+jack server is not running or cannot be started
+JackShmReadWritePtr::~JackShmReadWritePtr - Init not done for -1, skipping unlock
+JackShmReadWritePtr::~JackShmReadWritePtr - Init not done for -1, skipping unlock
+ALSA lib confmisc.c:165:(snd_config_get_card) [error.core] Cannot get card index for 0
+couldn't open play stream: No such file or directory
+[W][22:04:12.172265] pw.conf      | [          conf.c: 1182 try_load_conf()] can't load config client.conf: No such file or directory
+[E][22:04:12.172332] pw.conf      | [          conf.c: 1215 pw_conf_load_conf_for_context()] can't load config client.conf: No such file or directory
+ALSA lib confmisc.c:855:(parse_card) [error.core] cannot find card '0'
+ALSA lib conf.c:5211:(_snd_config_evaluate) [error.core] function snd_func_card_inum returned error: No such file or directory
+ALSA lib confmisc.c:422:(snd_func_concat) [error.core] error evaluating strings
+ALSA lib conf.c:5211:(_snd_config_evaluate) [error.core] function snd_func_concat returned error: No such file or directory
+ALSA lib confmisc.c:1342:(snd_func_refer) [error.core] error evaluating name
+ALSA lib conf.c:5211:(_snd_config_evaluate) [error.core] function snd_func_refer returned error: No such file or directory
+ALSA lib conf.c:5734:(snd_config_expand) [error.core] Evaluate error: No such file or directory
+ALSA lib pcm.c:2722:(snd_pcm_open_noupdate) [error.pcm] Unknown PCM default
+Cannot connect to server socket err = No such file or directory
+Cannot connect to server request channel
+jack server is not running or cannot be started
+JackShmReadWritePtr::~JackShmReadWritePtr - Init not done for -1, skipping unlock
+JackShmReadWritePtr::~JackShmReadWritePtr - Init not done for -1, skipping unlock
+ALSA lib confmisc.c:165:(snd_config_get_card) [error.core] Cannot get card index for 0
+couldn't open play stream: No such file or directory
+DCHOVER set=true mouseActive=true Instance of 'Size'
+DCHOVER apply=true mouseActive=true mounted=true
+DCHOVER set=false mouseActive=true Instance of 'Size'
+DCHOVER set=true mouseActive=true Instance of 'Size'
+DCHOVER apply=false mouseActive=true mounted=true
+DCHOVER apply=true mouseActive=true mounted=true
+DCHOVER set=false mouseActive=true Instance of 'Size'
+DCHOVER apply=false mouseActive=true mounted=true
+DCHOVER set=true mouseActive=true Instance of 'Size'
+DCHOVER apply=true mouseActive=true mounted=true
+DCSHOT hover-menu-item
+DCHOVER set=false mouseActive=true Instance of 'Size'
+DCHOVER apply=false mouseActive=true mounted=true
+DCHOVER set=true mouseActive=true Instance of 'Size'
+DCHOVER apply=true mouseActive=true mounted=true
+DCSHOT hover-menu-item2
+[W][22:04:19.245722] pw.conf      | [          conf.c: 1182 try_load_conf()] can't load config client.conf: No such file or directory
+[E][22:04:19.245798] pw.conf      | [          conf.c: 1215 pw_conf_load_conf_for_context()] can't load config client.conf: No such file or directory
+ALSA lib confmisc.c:855:(parse_card) [error.core] cannot find card '0'
+ALSA lib conf.c:5211:(_snd_config_evaluate) [error.core] function snd_func_card_inum returned error: No such file or directory
+ALSA lib confmisc.c:422:(snd_func_concat) [error.core] error evaluating strings
+ALSA lib conf.c:5211:(_snd_config_evaluate) [error.core] function snd_func_concat returned error: No such file or directory
+ALSA lib confmisc.c:1342:(snd_func_refer) [error.core] error evaluating name
+ALSA lib conf.c:5211:(_snd_config_evaluate) [error.core] function snd_func_refer returned error: No such file or directory
+ALSA lib conf.c:5734:(snd_config_expand) [error.core] Evaluate error: No such file or directory
+ALSA lib pcm.c:2722:(snd_pcm_open_noupdate) [error.pcm] Unknown PCM default
+Cannot connect to server socket err = No such file or directory
+Cannot connect to server request channel
+jack server is not running or cannot be started
+JackShmReadWritePtr::~JackShmReadWritePtr - Init not done for -1, skipping unlock
+JackShmReadWritePtr::~JackShmReadWritePtr - Init not done for -1, skipping unlock
+ALSA lib confmisc.c:165:(snd_config_get_card) [error.core] Cannot get card index for 0
+couldn't open play stream: No such file or directory
+DCHOVER set=true mouseActive=false Instance of 'Size'
+DCHOVER apply=true mouseActive=false mounted=true
+[W][22:04:19.321169] pw.conf      | [          conf.c: 1182 try_load_conf()] can't load config client.conf: No such file or directory
+[E][22:04:19.321234] pw.conf      | [          conf.c: 1215 pw_conf_load_conf_for_context()] can't load config client.conf: No such file or directory
+ALSA lib confmisc.c:855:(parse_card) [error.core] cannot find card '0'
+ALSA lib conf.c:5211:(_snd_config_evaluate) [error.core] function snd_func_card_inum returned error: No such file or directory
+ALSA lib confmisc.c:422:(snd_func_concat) [error.core] error evaluating strings
+ALSA lib conf.c:5211:(_snd_config_evaluate) [error.core] function snd_func_concat returned error: No such file or directory
+ALSA lib confmisc.c:1342:(snd_func_refer) [error.core] error evaluating name
+ALSA lib conf.c:5211:(_snd_config_evaluate) [error.core] function snd_func_refer returned error: No such file or directory
+ALSA lib conf.c:5734:(snd_config_expand) [error.core] Evaluate error: No such file or directory
+ALSA lib pcm.c:2722:(snd_pcm_open_noupdate) [error.pcm] Unknown PCM default
+Cannot connect to server socket err = No such file or directory
+Cannot connect to server request channel
+jack server is not running or cannot be started
+JackShmReadWritePtr::~JackShmReadWritePtr - Init not done for -1, skipping unlock
+JackShmReadWritePtr::~JackShmReadWritePtr - Init not done for -1, skipping unlock
+ALSA lib confmisc.c:165:(snd_config_get_card) [error.core] Cannot get card index for 0
+couldn't open play stream: No such file or directory
+DCHOVER set=false mouseActive=false Instance of 'Size'
+DCHOVER apply=false mouseActive=false mounted=true
+DCSHOT after-menu-click-hover
