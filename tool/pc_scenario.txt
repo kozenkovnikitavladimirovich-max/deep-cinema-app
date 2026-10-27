@@ -1,38 +1,32 @@
 # Наведение мышью в настройках
 start DC_THEME=dark DC_SCREEN=settings
 wait 22
-shot settings
 move 800 300
 shot hover-300
-move 800 380
-shot hover-380
-move 800 460
-shot hover-460
-# Плеер: кнопка «Назад» вверху слева, затем наведение на главной
+# Плеер: кнопка «Назад» вверху слева закрывает плеер
 start DC_THEME=dark DC_SCREEN=player|/tmp/test.mkv
 wait 25
 move 800 450
-shot player-ui
-click 66 66
+move 61 53
+shot player-hover-back
+click 61 53
 wait 3
 shot after-back-click
-move 400 400
-move 420 430
-shot hover-after-player-1
-move 900 600
-move 920 620
-shot hover-after-player-2
-move 100 60
-shot hover-menu-button
-# Клавиатура как пульт: вниз по настройкам
-start DC_THEME=dark DC_SCREEN=settings
-wait 22
-key Down
-shot kb-down1
-key Down 3
-shot kb-down4
-key Return
+# Наведение после выхода из плеера
+move 120 50
+move 104 54
+shot hover-menu-capsule
+click 104 54
 wait 2
-shot kb-section
-key Down 4
-shot kb-section-down4
+shot menu-open
+move 150 260
+move 160 270
+shot hover-menu-item
+move 160 330
+shot hover-menu-item2
+# Главная полка: стрелки у края (без ключа TMDB полок может не быть)
+key Escape
+wait 1
+move 900 500
+move 1500 520
+shot shelf-edge

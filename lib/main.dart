@@ -24,6 +24,9 @@ import 'data/torrserver.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  // ТВ: управление только пультом. Иначе Flutter считал, что экраном управляют касанием,
+  // и не показывал выбранный пункт (фокус ходил «вслепую», экран не прокручивался за ним).
+  if (Platform.isAndroid) FocusManager.instance.highlightStrategy = FocusHighlightStrategy.alwaysTraditional;
   // Пульт на некоторых телевизорах присылает одно нажатие дважды подряд — из-за этого
   // фокус перескакивал через полку. Повтор той же клавиши быстрее 90 мс отбрасываем.
   if (Platform.isAndroid) {
