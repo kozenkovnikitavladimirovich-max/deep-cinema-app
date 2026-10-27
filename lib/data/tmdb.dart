@@ -7,6 +7,7 @@ import 'package:http/http.dart' as http;
 
 import '../core/relay.dart';
 import '../core/settings.dart';
+import 'demo.dart';
 import 'kinopoisk.dart';
 import 'models.dart';
 
@@ -180,6 +181,7 @@ class Tmdb {
       }();
 
   Future<bool> get useKp async {
+    if (demoMode) return false;
     final mode = AppSettings.instance.dataSource;
     bool kp;
     if (mode == 'kp') {
@@ -218,7 +220,7 @@ class Tmdb {
   /// Свой ключ TMDB (Настройки → Ключи сервисов): длинный «токен чтения» (v4) идёт
   /// в заголовке, короткий «API Key» (v3) — в адресе.
   static String get key => AppSettings.instance.tmdbKey.trim();
-  static bool get hasKey => key.isNotEmpty;
+  static bool get hasKey => demoMode || key.isNotEmpty;
   static bool get _v3 => RegExp(r'^[0-9a-f]{32}$').hasMatch(key);
   static Map<String, String> get _authHeaders => hasKey && !_v3 ? {'Authorization': 'Bearer $key'} : const {};
 
@@ -245,6 +247,7 @@ class Tmdb {
     final cacheKey = '$path?${Uri(queryParameters: q).query}';
     final cached = _cache[cacheKey];
     if (cached != null) return cached;
+    if (demoMode) return demoTmdb(path, q);
     if (!hasKey) throw TmdbException('Не указан ключ TMDB — Настройки → Ключи сервисов (или войдите в аккаунт, где ключи уже сохранены)', auth: true);
 
     final problems = <String>[];

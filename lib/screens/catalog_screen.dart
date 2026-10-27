@@ -154,6 +154,8 @@ class _CatalogScreenState extends State<CatalogScreen> {
 
     return CustomScrollView(
       controller: _scroll,
+      // Ряды ниже экрана держим готовыми: пульт сразу находит следующий ряд постеров.
+      cacheExtent: 1400,
       slivers: [
         SliverPadding(
           padding: const EdgeInsets.fromLTRB(72, 34, 72, 0),

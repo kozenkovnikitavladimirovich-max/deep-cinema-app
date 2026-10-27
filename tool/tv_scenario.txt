@@ -1,72 +1,49 @@
-# Главная
+# Главная (тестовые фильмы): вниз по полкам, вбок по полке
 start
-wait 35
+wait 30
+key DPAD_DOWN
 shot home
 key DPAD_DOWN
-shot home-down1
-key DPAD_RIGHT 2
-shot home-right2
-# Меню → Настройки
-key BACK
-wait 2
-shot menu
-key DPAD_DOWN 5
-shot menu-on-settings
-key DPAD_CENTER
-wait 3
-shot settings
-key DPAD_DOWN 2
-shot settings-down2
-key DPAD_RIGHT
-shot settings-right
-# Поиск раздач → Встроенный поиск (поле поиска трекеров)
-key DPAD_CENTER
-wait 3
-shot search-section
+shot home-down2
+key DPAD_RIGHT 4
+shot home-right4
+key DPAD_DOWN
+shot home-down3
+key DPAD_LEFT 2
+shot home-left2
+key DPAD_DOWN 3
+shot home-down6
+key DPAD_UP 2
+shot home-up2
+# Карточка фильма: похожие
 key DPAD_CENTER
 wait 4
-shot trackers
-key DPAD_DOWN
-shot trackers-down1
-key DPAD_DOWN
-shot trackers-down2
-key DPAD_DOWN
-shot trackers-down3
+shot details
 key DPAD_DOWN 3
-shot trackers-down6
-key DPAD_UP 6
-shot trackers-up6
+shot details-down3
+key DPAD_RIGHT 3
+shot details-right3
+key DPAD_LEFT 2
+shot details-left2
+key DPAD_DOWN
+shot details-down4
 key BACK
 wait 2
+shot back-home
+# Фильмы: сетка постеров
 key BACK
 wait 2
-shot back-to-settings
-# Аккаунт и окно входа (Настройки → Главная → меню → Аккаунт)
-key BACK
-wait 2
-key BACK
-wait 2
-shot menu2
-key DPAD_DOWN 4
+key DPAD_DOWN 1
 key DPAD_CENTER
-wait 3
-shot account
-key DPAD_DOWN
-shot account-down1
-key DPAD_UP
-key DPAD_CENTER
-wait 2
-shot dialog-loading
-key DPAD_RIGHT
-shot dialog-right
-key DPAD_DOWN
-shot dialog-down
-wait 6
-shot dialog-later
-key DPAD_LEFT
-shot dialog-left
-key BACK
-wait 2
-shot dialog-closed
-key DPAD_DOWN
-shot account-after-dialog
+wait 5
+shot films
+key DPAD_DOWN 2
+shot films-down2
+key DPAD_DOWN 2
+shot films-down4
+key DPAD_RIGHT 2
+shot films-right2
+key DPAD_DOWN 3
+shot films-down7
+key DPAD_UP 4
+shot films-up4

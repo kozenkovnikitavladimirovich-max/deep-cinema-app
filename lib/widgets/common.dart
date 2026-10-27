@@ -14,6 +14,18 @@ import 'focusable.dart';
 import 'net_image.dart';
 import '../core/motion.dart';
 
+/// Рамка выбранной карточки (постер, кадр, подборка): по одному увеличению выбранное
+/// терялось среди соседних — особенно в больших списках фильмов и сериалов.
+Decoration? focusFrame(BuildContext context, bool focused, {double radius = 16, BoxShape shape = BoxShape.rectangle}) {
+  if (!focused) return null;
+  final dark = Theme.of(context).brightness == Brightness.dark;
+  return BoxDecoration(
+    shape: shape,
+    borderRadius: shape == BoxShape.circle ? null : BorderRadius.circular(radius),
+    border: Border.all(color: dark ? Colors.white : const Color(0xFF111114), width: 4),
+  );
+}
+
 /// Матовое стекло tvOS под кнопками и плашками.
 Color matteFor(BuildContext context) {
   final m = Theme.of(context).brightness == Brightness.dark ? const Color(0x8C2C2C32) : const Color(0x99FFFFFF);
@@ -277,6 +289,7 @@ class _PosterBody extends StatelessWidget {
         width: width,
         height: height,
         decoration: BoxDecoration(color: const Color(0xFF1C1C20), borderRadius: BorderRadius.circular(16)),
+        foregroundDecoration: focusFrame(context, focused),
         clipBehavior: Clip.antiAlias,
         child: Stack(children: [
           Positioned.fill(child: NetImage(url: width > 220 ? item.posterUrl : item.posterSmallUrl, fallback: item.poster, cacheWidth: (width * 2).round())),
@@ -373,6 +386,7 @@ class LandscapeCard extends StatelessWidget {
             width: width,
             height: h,
             decoration: BoxDecoration(color: const Color(0xFF1C1C20), borderRadius: BorderRadius.circular(16)),
+            foregroundDecoration: focusFrame(context, focused),
             clipBehavior: Clip.antiAlias,
             child: Stack(children: [
               Positioned.fill(child: NetImage(url: imageUrl, fallback: fallback, cacheWidth: (width * 2).round())),
@@ -473,19 +487,28 @@ class _ShelfRowState extends State<ShelfRow> {
     // Мягкая тень у края полки: прозрачный переход в тёмный (в светлой теме — в светлый),
     // без «серой плашки» поверх фона. Стрелка — белая с лёгкой тенью, читается на любой карточке.
     final shade = dark ? const Color(0xFF000000) : const Color(0xFFFFFFFF);
+    // Тень растворяется и сверху/снизу — без прямого обреза по краю полки.
     return MouseRegion(
       cursor: SystemMouseCursors.click,
       child: GestureDetector(
         onTap: () => _page(dir),
-        child: Container(
-          width: 96,
+        child: ShaderMask(
+          blendMode: BlendMode.dstIn,
+          shaderCallback: (r) => const LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [Color(0x00000000), Color(0xFF000000), Color(0xFF000000), Color(0x00000000)],
+            stops: [0, .22, .78, 1],
+          ).createShader(r),
+          child: Container(
+          width: 120,
           alignment: left ? const Alignment(-.35, 0) : const Alignment(.35, 0),
           decoration: BoxDecoration(
             gradient: LinearGradient(
               begin: left ? Alignment.centerLeft : Alignment.centerRight,
               end: left ? Alignment.centerRight : Alignment.centerLeft,
-              colors: [shade.withValues(alpha: dark ? .62 : .7), shade.withValues(alpha: dark ? .3 : .35), shade.withValues(alpha: 0)],
-              stops: const [0, .45, 1],
+              colors: [shade.withValues(alpha: dark ? .55 : .65), shade.withValues(alpha: dark ? .22 : .3), shade.withValues(alpha: 0)],
+              stops: const [0, .5, 1],
             ),
           ),
           child: Icon(
@@ -494,6 +517,7 @@ class _ShelfRowState extends State<ShelfRow> {
             size: 40,
             shadows: [Shadow(color: dark ? const Color(0x99000000) : const Color(0x66FFFFFF), blurRadius: 12)],
           ),
+        ),
         ),
       ),
     );
@@ -518,6 +542,8 @@ class _ShelfRowState extends State<ShelfRow> {
 
   KeyEventResult _onKey(FocusNode _, KeyEvent e) {
     if (e is! KeyDownEvent && e is! KeyRepeatEvent) return KeyEventResult.ignored;
+    final k = e.logicalKey;
+    if (k == LogicalKeyboardKey.arrowLeft || k == LogicalKeyboardKey.arrowRight) return _sideways(k == LogicalKeyboardKey.arrowRight);
     final down = e.logicalKey == LogicalKeyboardKey.arrowDown;
     if (!down && e.logicalKey != LogicalKeyboardKey.arrowUp) return KeyEventResult.ignored;
     final cur = FocusManager.instance.primaryFocus;
@@ -570,6 +596,26 @@ class _ShelfRowState extends State<ShelfRow> {
     return KeyEventResult.handled;
   }
 
+  /// Влево/вправо — строго по этой полке: соседняя карточка по порядку. Раньше пульт
+  /// иногда «перепрыгивал» на полку выше. В конце полки вправо ничего не делает,
+  /// в начале влево — как обычно (открывает меню разделов).
+  KeyEventResult _sideways(bool right) {
+    final cur = FocusManager.instance.primaryFocus;
+    if (cur == null) return KeyEventResult.ignored;
+    if (!_items.contains(cur)) return KeyEventResult.ignored;
+    // Только пункты того же ряда (у карточки серии под ней есть своя кнопка — она в другом ряду).
+    final y = cur.rect.center.dy, h = cur.rect.height / 2;
+    final items = _items.where((n) => (n.rect.center.dy - y).abs() < h).toList()
+      ..sort((a, b) => a.rect.center.dx.compareTo(b.rect.center.dx));
+    final i = items.indexOf(cur);
+    if (i < 0) return KeyEventResult.ignored;
+    final j = right ? i + 1 : i - 1;
+    if (j < 0) return KeyEventResult.ignored;
+    if (j >= items.length) return KeyEventResult.handled;
+    items[j].requestFocus();
+    return KeyEventResult.handled;
+  }
+
   @override
   Widget build(BuildContext context) {
     return Focus(
@@ -605,8 +651,8 @@ class _ShelfRowState extends State<ShelfRow> {
                   ),
                 ),
                 if (_hover && WindowService.isDesktop && _clearOfTopBar) ...[
-                  if (_canLeft) Positioned(left: 0, top: 18, bottom: 18, child: _edge(-1)),
-                  if (_canRight) Positioned(right: 0, top: 18, bottom: 18, child: _edge(1)),
+                  if (_canLeft) Positioned(left: 0, top: 0, bottom: 0, child: _edge(-1)),
+                  if (_canRight) Positioned(right: 0, top: 0, bottom: 0, child: _edge(1)),
                 ],
               ]),
             ),

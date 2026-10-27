@@ -260,9 +260,13 @@ class _PlayerScreenState extends State<PlayerScreen> {
   /// по кнопкам (а если фокус потерялся — ставим его на «Паузу»).
   KeyEventResult _onRemote(FocusNode node, KeyEvent e) {
     final hidden = !_ui && _playing && _status == _Status.playing && _switching == null;
-    _poke();
     if (e is! KeyDownEvent && e is! KeyRepeatEvent) return KeyEventResult.ignored;
     final k = e.logicalKey;
+    // «Назад» не показывает панель: иначе панель появлялась и тут же пряталась этим же
+    // нажатием, и из плеера было не выйти (при скрытой панели «Назад» — выход).
+    const back = {LogicalKeyboardKey.goBack, LogicalKeyboardKey.escape, LogicalKeyboardKey.browserBack, LogicalKeyboardKey.gameButtonB};
+    if (back.contains(k)) return KeyEventResult.ignored;
+    _poke();
     final ok = {LogicalKeyboardKey.select, LogicalKeyboardKey.enter, LogicalKeyboardKey.numpadEnter, LogicalKeyboardKey.gameButtonA};
     final arrows = {LogicalKeyboardKey.arrowLeft, LogicalKeyboardKey.arrowRight, LogicalKeyboardKey.arrowUp, LogicalKeyboardKey.arrowDown};
     if (_panel || _episodesPanel || _info || _musicCardOpen) {

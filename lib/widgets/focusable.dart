@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io' show Platform;
 
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
@@ -117,6 +118,16 @@ class _FocusableState extends State<Focusable> {
     super.dispose();
   }
 
+  /// ТВ: экран сразу встаёт под выбранный пункт, без плавной прокрутки — слабая приставка
+  /// не успевала её дорисовать, и картинка отставала от фокуса.
+  static bool get _jump {
+    try {
+      return Platform.isAndroid;
+    } catch (_) {
+      return false;
+    }
+  }
+
   bool _revealTop() {
     final ro = context.findRenderObject();
     final scroll = Scrollable.maybeOf(context, axis: Axis.vertical);
@@ -126,7 +137,11 @@ class _FocusableState extends State<Focusable> {
     final pos = scroll.position;
     final offsetAtTop = viewport.getOffsetToReveal(ro, 0).offset;
     if (offsetAtTop > pos.viewportDimension * .55 || pos.pixels <= pos.minScrollExtent) return false;
-    Motion.scrollTo(pos, pos.minScrollExtent);
+    if (_jump) {
+      pos.jumpTo(pos.minScrollExtent);
+    } else {
+      Motion.scrollTo(pos, pos.minScrollExtent);
+    }
     return true;
   }
 
@@ -197,7 +212,7 @@ class _FocusableState extends State<Focusable> {
             context,
             alignment: .5,
             alignmentPolicy: ScrollPositionAlignmentPolicy.explicit,
-            duration: Motion.of(const Duration(milliseconds: 260)),
+            duration: _jump ? Duration.zero : Motion.of(const Duration(milliseconds: 260)),
             curve: Curves.easeOutCubic,
           );
         }

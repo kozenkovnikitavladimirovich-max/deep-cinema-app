@@ -62,7 +62,7 @@ class _PersonScreenState extends State<PersonScreen> {
         future: _f,
         builder: (context, snap) {
           final d = snap.data;
-          return CustomScrollView(slivers: [
+          return CustomScrollView(cacheExtent: 1400, slivers: [
             SliverPadding(
               padding: const EdgeInsets.fromLTRB(72, 110, 72, 0),
               sliver: SliverToBoxAdapter(

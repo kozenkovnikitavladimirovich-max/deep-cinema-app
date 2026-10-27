@@ -99,6 +99,7 @@ class _QueryScreenState extends State<QueryScreen> {
     return Scaffold(
       backgroundColor: c.bg,
       body: CustomScrollView(
+        cacheExtent: 1400,
         controller: _scroll,
         slivers: [
           SliverPadding(

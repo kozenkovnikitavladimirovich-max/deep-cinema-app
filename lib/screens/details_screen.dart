@@ -487,6 +487,7 @@ class _EpisodeCard extends StatelessWidget {
                 height: 180,
                 clipBehavior: Clip.antiAlias,
                 decoration: BoxDecoration(color: const Color(0xFF1C1C20), borderRadius: BorderRadius.circular(16)),
+                foregroundDecoration: focusFrame(context, f),
                 child: Stack(fit: StackFit.expand, children: [
                   // Кадра серии нет — общий кадр сериала, чуть крупнее: у таких картинок бывают
                   // тёмные поля по краям, они уходят за край карточки.

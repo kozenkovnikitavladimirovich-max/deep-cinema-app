@@ -695,6 +695,7 @@ class PersonCircle extends StatelessWidget {
                 shape: BoxShape.circle,
                 boxShadow: f ? const [BoxShadow(color: Color(0x73000000), blurRadius: 30, offset: Offset(0, 14))] : const [],
               ),
+              foregroundDecoration: focusFrame(context, f, shape: BoxShape.circle),
               child: PersonPhoto(
                 url: person.photoUrl,
                 size: size,
