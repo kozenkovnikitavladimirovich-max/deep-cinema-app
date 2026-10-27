@@ -27,7 +27,8 @@ move() { # плавно, шагами — чтобы программа виде
   done
   cx=$tx; cy=$ty
 }
-while IFS= read -r line || [ -n "$line" ]; do
+exec 3< "$SCEN"
+while IFS= read -r -u 3 line || [ -n "$line" ]; do
   set -- $line
   [ $# -eq 0 ] && continue
   case "$1" in
@@ -39,6 +40,6 @@ while IFS= read -r line || [ -n "$line" ]; do
     key) c=${3:-1}; for _ in $(seq "$c"); do xdotool key "$2"; sleep 0.5; done; sleep 0.8 ;;
     shot) n=$((n+1)); import -window root "$(printf 'shots/%02d-%s.png' $n "$2")" ;;
   esac
-done < "$SCEN"
+done
 [ -n "$pid" ] && kill $pid 2>/dev/null
 true

@@ -24,16 +24,17 @@ start() {
   adb logcat -c
   adb shell monkey -p $PKG -c android.intent.category.LAUNCHER 1 > /dev/null 2>&1
 }
-while IFS= read -r line || [ -n "$line" ]; do
+exec 3< "$SCEN"
+while IFS= read -r -u 3 line || [ -n "$line" ]; do
   set -- $line
   [ $# -eq 0 ] && continue
   case "$1" in
     \#*) ;;
     start) start ;;
     wait) sleep "$2" ;;
-    key) c=${3:-1}; for _ in $(seq "$c"); do adb shell input keyevent "KEYCODE_$2"; sleep 0.7; done; sleep 1 ;;
+    key) c=${3:-1}; for _ in $(seq "$c"); do adb shell input keyevent "KEYCODE_$2" < /dev/null; sleep 0.7; done; sleep 1 ;;
     text) shift; adb shell input text "$(echo "$*" | sed 's/ /%s/g')"; sleep 1 ;;
     shot) n=$((n+1)); f=$(printf 'shots/%02d-%s.png' $n "$2"); adb exec-out screencap -p > "$f"; echo "снят $f" ;;
   esac
-done < "$SCEN"
+done
 adb logcat -d -s flutter:V > shots/flutter.log 2>&1 || true
