@@ -286,11 +286,11 @@ class Account extends ChangeNotifier {
               'client_id': id,
               'scope': 'openid email profile',
             }).timeout(const Duration(seconds: 20))
-          : await http.post(Uri.parse('https://oauth.yandex.ru/device/code'), body: {
+          : await _yandex(Uri.parse('https://oauth.yandex.ru/device/code'), form: {
               'client_id': id,
               'device_id': _deviceId,
               'device_name': _deviceName,
-            }).timeout(const Duration(seconds: 20));
+            });
     } catch (e) {
       throw AuthException('Нет связи с ${p.title}. Проверьте интернет.');
     }
@@ -421,10 +421,63 @@ class Account extends ChangeNotifier {
     unawaited(sync());
   }
 
-  Future<http.Response> _tokenRequest(AuthProvider p, Map<String, String> body) => http.post(
-        Uri.parse(p == AuthProvider.google ? 'https://oauth2.googleapis.com/token' : 'https://oauth.yandex.ru/token'),
-        body: {...body, 'client_id': _clientId(p), 'client_secret': _clientSecret(p)},
-      ).timeout(const Duration(seconds: 20));
+  Future<http.Response> _tokenRequest(AuthProvider p, Map<String, String> body) {
+    final form = {...body, 'client_id': _clientId(p), 'client_secret': _clientSecret(p)};
+    if (p == AuthProvider.yandex) return _yandex(Uri.parse('https://oauth.yandex.ru/token'), form: form);
+    return http.post(Uri.parse('https://oauth2.googleapis.com/token'), body: form).timeout(const Duration(seconds: 20));
+  }
+
+  // ── Яндекс напрямую, а если не открывается — через мост ──────────
+  // На телевизоре oauth.yandex.ru и login.yandex.ru иногда не открываются (код
+  // подтверждён, а вход не завершается). Тогда тот же запрос идёт через мост (/t),
+  // как для трекеров. После первой неудачи до конца запуска сразу идём через мост.
+
+  static bool _yandexViaBridge = false;
+
+  Future<http.Response> _yandex(Uri u, {Map<String, String>? form, Map<String, String> headers = const {}}) async {
+    final br = Relay.bridge;
+    if (_yandexViaBridge && br != null) {
+      try {
+        return await _yandexBridge(br, u, form: form, headers: headers);
+      } catch (_) {
+        // мост не ответил — пробуем напрямую
+      }
+    }
+    try {
+      final r = form != null
+          ? await http.post(u, headers: headers, body: form).timeout(const Duration(seconds: 20))
+          : await http.get(u, headers: headers).timeout(const Duration(seconds: 20));
+      if (r.statusCode < 500) return r;
+      if (br == null) return r;
+    } catch (e) {
+      if (br == null) rethrow;
+    }
+    _yandexViaBridge = true;
+    return _yandexBridge(br, u, form: form, headers: headers);
+  }
+
+  Future<http.Response> _yandexBridge(String br, Uri u, {Map<String, String>? form, Map<String, String> headers = const {}}) async {
+    final r = await http
+        .post(Uri.parse('$br/t'),
+            headers: {'content-type': 'application/json', 'x-dc-key': 'dc-trackers-v1'},
+            body: jsonEncode({
+              'url': u.toString(),
+              'method': form != null ? 'POST' : 'GET',
+              'headers': {
+                ...headers,
+                if (form != null) 'content-type': 'application/x-www-form-urlencoded',
+              },
+              if (form != null) 'body': base64.encode(utf8.encode(Uri(queryParameters: form).query)),
+            }))
+        .timeout(const Duration(seconds: 25));
+    final j = _json(utf8.decode(r.bodyBytes));
+    if (r.statusCode != 200 || j['error'] != null || j['status'] == null) {
+      throw Exception('мост: ${j['error'] ?? r.statusCode}');
+    }
+    final type = '${j['type'] ?? ''}';
+    return http.Response.bytes(base64.decode('${j['body'] ?? ''}'), (j['status'] as num).toInt(),
+        headers: {if (type.isNotEmpty) 'content-type': type});
+  }
 
   /// Подтверждение личности Google (для входа в Firebase).
   String? _googleIdToken;
@@ -470,7 +523,7 @@ class Account extends ChangeNotifier {
         email = '${j['email'] ?? ''}';
         avatarUrl = j['picture'] as String?;
       } else {
-        final r = await http.get(Uri.parse('https://login.yandex.ru/info?format=json'), headers: _auth(t)).timeout(const Duration(seconds: 20));
+        final r = await _yandex(Uri.parse('https://login.yandex.ru/info?format=json'), headers: _auth(t));
         final j = _json(r.body);
         name = '${j['first_name'] ?? j['display_name'] ?? j['login'] ?? ''}';
         email = '${j['default_email'] ?? ''}';
