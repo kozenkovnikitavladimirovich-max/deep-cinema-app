@@ -1,0 +1,61 @@
+# Главная
+start
+wait 35
+shot home
+key DPAD_DOWN
+shot home-down1
+key DPAD_DOWN
+shot home-down2
+key DPAD_RIGHT 3
+shot home-right3
+key DPAD_UP 2
+shot home-up2
+# Меню → Настройки
+key BACK
+wait 2
+shot menu
+key DPAD_DOWN 5
+shot menu-on-settings
+key DPAD_CENTER
+wait 3
+shot settings
+key DPAD_DOWN
+shot settings-down1
+key DPAD_DOWN 3
+shot settings-down4
+key DPAD_RIGHT
+shot settings-right
+key DPAD_LEFT
+shot settings-left
+key DPAD_CENTER
+wait 3
+shot section
+key DPAD_DOWN 3
+shot section-down3
+key DPAD_DOWN 4
+shot section-down7
+key BACK
+wait 2
+shot section-back
+# Аккаунт и окно входа
+key BACK
+wait 2
+shot menu2
+key DPAD_UP
+key DPAD_CENTER
+wait 3
+shot account
+key DPAD_DOWN 2
+shot account-down2
+key DPAD_RIGHT
+shot account-right
+key DPAD_UP 2
+key DPAD_CENTER
+wait 4
+shot dialog
+key DPAD_DOWN
+shot dialog-down
+key DPAD_RIGHT
+shot dialog-right
+key DPAD_LEFT
+shot dialog-left

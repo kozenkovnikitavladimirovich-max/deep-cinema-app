@@ -1,0 +1,70 @@
+name: Проверка пульта (эмулятор)
+# Запуск вручную. Собирает APK из выбранной ветки (с временной подписью — не для установки
+# на ТВ), запускает на эмуляторе Android с экраном 1920×1080 и нажимает кнопки пульта
+# по сценарию tool/tv_scenario.txt. Снимки — в ветку tv-shots. Релиз не создаёт.
+on:
+  workflow_dispatch:
+    inputs:
+      ref:
+        description: 'Ветка'
+        default: main
+permissions:
+  contents: write
+concurrency:
+  group: tv-check
+  cancel-in-progress: true
+jobs:
+  tv:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.ref }}
+      - uses: actions/setup-java@v4
+        with:
+          distribution: zulu
+          java-version: '17'
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+      - name: Сборка APK
+        run: |
+          set -o pipefail
+          { flutter create . --project-name deep_cinema --org app.deepcinema --platforms=android && python3 tool/patch_platforms.py android; } > build.log 2>&1
+          python3 tool/build_tracker_catalog.py >> build.log 2>&1 || true
+          keytool -genkeypair -keystore tool/assets/signing.keystore -storepass android -keypass android -alias androiddebugkey -dname "CN=test" -keyalg RSA -validity 1000 >> build.log 2>&1
+          flutter pub get >> build.log 2>&1
+          flutter analyze --no-fatal-infos --no-fatal-warnings > analyze.txt 2>&1 || true
+          grep -E "error •" analyze.txt | head -30 | while read -r l; do echo "::error title=analyze::$l"; done || true
+          flutter build apk --release --target-platform android-x64 --dart-define=APP_VERSION=0.0.0-test >> build.log 2>&1 || { echo "::error title=APK::$(tail -n 40 build.log | sed ':a;N;$!ba;s/%/%25/g;s/\r//g;s/\n/%0A/g')"; exit 1; }
+      - name: KVM
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules && sudo udevadm trigger --name-match=kvm
+      - name: Эмулятор и пульт
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 30
+          arch: x86_64
+          target: google_apis
+          disable-animations: true
+          emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -no-snapshot
+          script: bash tool/tv_check.sh build/app/outputs/flutter-apk/app-release.apk
+      - name: Ошибки программы
+        if: always()
+        run: |
+          grep -iE "exception|error" shots/flutter.log | head -15 | while read -r l; do echo "::warning title=flutter::$(echo "$l" | cut -c1-300)"; done || true
+      - name: В ветку tv-shots
+        if: always()
+        run: |
+          cd shots
+          for f in *.png; do [ -f "$f" ] && convert "$f" -resize 960x -quality 80 "${f%.png}.jpg" && rm "$f"; done || true
+          git init -q
+          git config user.name "deep-cinema-bot"
+          git config user.email "bot@users.noreply.github.com"
+          git checkout -q -b tv-shots
+          git add -A
+          git commit -qm "Пульт: ${{ inputs.ref }} $(date -u +%F\ %T)"
+          git push -qf "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}.git" tv-shots
