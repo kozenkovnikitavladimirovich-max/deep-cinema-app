@@ -82,8 +82,10 @@ class _FocusableState extends State<Focusable> {
   bool _focusFromHover = false;
 
   void _setHover(bool v) {
+    if (const bool.fromEnvironment('DC_FOCUS_LOG')) debugPrint('DCHOVER set=$v mouseActive=$_mouseActive ${context.size}');
     // Решаем чуть позже: отметка «мышь двигалась» ставится тем же событием, но позже.
     scheduleMicrotask(() {
+      if (const bool.fromEnvironment('DC_FOCUS_LOG')) debugPrint('DCHOVER apply=$v mouseActive=$_mouseActive mounted=$mounted');
       if (mounted) _applyHover(v);
     });
   }
@@ -237,6 +239,7 @@ class HoverReset extends StatelessWidget {
   @override
   Widget build(BuildContext context) => NotificationListener<ScrollUpdateNotification>(
         onNotification: (n) {
+          if (const bool.fromEnvironment('DC_FOCUS_LOG') && n.dragDetails == null) debugPrint('DCHOVER clear by scroll ${n.metrics.axis} ${n.context?.widget.runtimeType}');
           if (n.dragDetails == null) _FocusableState.clearHover();
           return false;
         },
