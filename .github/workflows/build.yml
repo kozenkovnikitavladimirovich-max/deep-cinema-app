@@ -3,7 +3,7 @@ name: Сборка Deep Cinema
 on:
   push:
     branches: [main]
-    paths-ignore: ['design/**', 'README.md', '.github/workflows/screens.yml', '.github/workflows/build.yml', 'presets/**/README.md', 'tool/bridge/**']
+    paths-ignore: ['design/**', 'README.md', '.github/workflows/screens.yml', '.github/workflows/build.yml', 'presets/**/README.md', 'tool/bridge/**', 'docs/**']
   workflow_dispatch:
 
 permissions:
