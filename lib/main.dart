@@ -6,6 +6,7 @@ import 'package:flutter/services.dart';
 import 'package:media_kit/media_kit.dart';
 
 import 'app.dart';
+import 'core/side_buttons.dart';
 import 'core/data_store.dart';
 import 'core/net_proxy.dart';
 import 'core/relay.dart';
@@ -27,6 +28,11 @@ Future<void> main() async {
   // ТВ: управление только пультом. Иначе Flutter считал, что экраном управляют касанием,
   // и не показывал выбранный пункт (фокус ходил «вслепую», экран не прокручивался за ним).
   if (Platform.isAndroid) FocusManager.instance.highlightStrategy = FocusHighlightStrategy.alwaysTraditional;
+  // ПК: боковые кнопки мыши перехватываются до движка (иначе «залипали» и гасили подсветку под курсором).
+  if (Platform.isWindows || Platform.isLinux) {
+    SideButtons.onBack = DeepCinemaApp.goBack;
+    SideButtons.install();
+  }
   // Пульт на некоторых телевизорах присылает одно нажатие дважды подряд — из-за этого
   // фокус перескакивал через полку. Повтор той же клавиши быстрее 90 мс отбрасываем.
   if (Platform.isAndroid) {

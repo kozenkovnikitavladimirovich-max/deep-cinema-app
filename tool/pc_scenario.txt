@@ -8,6 +8,8 @@ back
 move 700 700
 move 720 720
 shot after-side-back-1
+move 61 53
+shot hover-back-again
 back
 wait 2
 move 780 590
@@ -20,3 +22,8 @@ move 160 270
 shot hover-menu-item
 move 160 330
 shot hover-menu-item2
+click 160 330
+wait 2
+move 800 300
+move 820 320
+shot after-click-hover
