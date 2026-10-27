@@ -232,7 +232,6 @@ class LoginDialog extends StatefulWidget {
 class _LoginDialogState extends State<LoginDialog> {
   LoginCode? _code;
   String? _qr; // адрес входа Яндексом по QR (без ввода кода)
-  String? _qrNote;
   String? _error;
   bool _closed = false;
   int _attempt = 0;
@@ -256,7 +255,6 @@ class _LoginDialogState extends State<LoginDialog> {
       _error = null;
       _code = null;
       _qr = null;
-      _qrNote = null;
     });
     final a = Account.instance;
     // Ждём любой из способов: QR-код или код с ya.ru/device. Ошибка одного не мешает другому.
@@ -277,23 +275,9 @@ class _LoginDialogState extends State<LoginDialog> {
     }
 
     if (widget.provider == AuthProvider.yandex && Account.yandexQr) {
-      // QR — только через мост, который отсюда реально открывается; иначе вход по коду.
-      left++;
-      Account.qrBridge().then((b) {
-        left--;
-        if (stop() || !mounted) {
-          finish();
-          return;
-        }
-        if (b == null) {
-          setState(() => _qrNote = 'Вход в одно нажатие сейчас недоступен (мост не открывается без VPN) — войдите по коду, это работает без моста');
-          finish();
-          return;
-        }
-        final state = Account.newQrState();
-        setState(() => _qr = Account.qrUrl(state, b));
-        track(a.waitQr(state, b, cancelled: stop));
-      });
+      final state = Account.newQrState();
+      setState(() => _qr = Account.qrUrl(state));
+      track(a.waitQr(state, cancelled: stop));
     }
     try {
       final code = await a.startLogin(widget.provider);
@@ -357,10 +341,6 @@ class _LoginDialogState extends State<LoginDialog> {
                 Text('и введите код', style: TextStyle(fontSize: 16, color: c.muted)),
                 const SizedBox(height: 6),
                 SelectableText(code.userCode, style: const TextStyle(fontSize: 40, fontWeight: FontWeight.w800, letterSpacing: 3)),
-                if (_qrNote != null) ...[
-                  const SizedBox(height: 8),
-                  Text(_qrNote!, style: TextStyle(fontSize: 13, color: c.muted)),
-                ],
               ],
               const SizedBox(height: 12),
               Row(children: [

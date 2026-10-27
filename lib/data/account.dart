@@ -362,33 +362,17 @@ class Account extends ChangeNotifier {
   }
 
   /// Адрес для QR-кода.
-  /// Мост для QR-входа: первый, который отвечает отсюда и умеет QR (он лишь передаёт
-  /// код от Яндекса в программу, аккаунты на нём не хранятся). null — ни один не доступен.
-  static Future<String?> qrBridge() async {
-    final probe = 'probe${DateTime.now().microsecondsSinceEpoch}';
-    final all = [if (Relay.accountBridge != null) Relay.accountBridge!, ...Relay.bridges];
-    final seen = <String>{};
-    for (final b in all) {
-      if (!seen.add(b)) continue;
-      try {
-        final r = await http.get(Uri.parse('$b/ya/poll?state=$probe')).timeout(const Duration(seconds: 6));
-        if (r.statusCode == 200 && _json(utf8.decode(r.bodyBytes))['pending'] == true) return b;
-      } catch (_) {}
-    }
-    return null;
-  }
-
-  static String qrUrl(String state, String bridge) => Uri.https('oauth.yandex.ru', '/authorize', {
+  static String qrUrl(String state) => Uri.https('oauth.yandex.ru', '/authorize', {
         'response_type': 'code',
         'client_id': _clientId(AuthProvider.yandex),
-        'redirect_uri': '$bridge/ya',
+        'redirect_uri': '${Relay.bridge}/ya',
         'state': state,
         'device_id': instance._deviceId,
         'device_name': instance._deviceName,
       }).toString();
 
   /// Ждать, пока пользователь подтвердит вход на телефоне.
-  Future<void> waitQr(String state, String bridge, {required bool Function() cancelled}) async {
+  Future<void> waitQr(String state, {required bool Function() cancelled}) async {
     final until = DateTime.now().add(const Duration(minutes: 10));
     while (!cancelled()) {
       if (DateTime.now().isAfter(until)) throw AuthException('QR-код устарел — откройте вход заново');
@@ -396,7 +380,7 @@ class Account extends ChangeNotifier {
       if (cancelled()) return;
       Map<String, dynamic> j;
       try {
-        final r = await http.get(Uri.parse('$bridge/ya/poll?state=$state')).timeout(const Duration(seconds: 15));
+        final r = await http.get(Uri.parse('${Relay.bridge}/ya/poll?state=$state')).timeout(const Duration(seconds: 15));
         if (r.statusCode != 200) continue;
         j = _json(utf8.decode(r.bodyBytes));
       } catch (_) {
@@ -587,11 +571,11 @@ class Account extends ChangeNotifier {
     } on AuthException catch (e) {
       syncError = e.message;
     } catch (e) {
-      final host = Uri.tryParse(Relay.accountBridge ?? '')?.host ?? 'мост';
+      final host = Uri.tryParse(Relay.bridge ?? '')?.host ?? 'мост';
       final why = e is TimeoutException
-          ? '$host не ответил вовремя (замедлен или заблокирован без VPN)'
+          ? '$host не ответил вовремя (Cloudflare в России иногда замедляют — повторю позже)'
           : '$e'.contains('Socket') || '$e'.contains('Connection') || '$e'.contains('Handshake')
-              ? 'нет соединения с $host (заблокирован без VPN?)'
+              ? 'нет соединения с $host '
               : '$e'.replaceFirst('Exception: ', '');
       syncError = 'Не синхронизировалось: $why. Данные отправятся, когда связь появится';
       debugPrint('sync: $e');

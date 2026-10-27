@@ -26,9 +26,7 @@ class Keys {
 
   /// Адрес своего моста на Cloudflare Workers (tool/bridge). Пусто — пока не настроен
   /// (можно указать и в Настройки → Данные о фильмах).
-  /// Мосты по порядку предпочтения: программа берёт первый, который реально работает
-  /// (Cloudflare в России замедляют — тогда работает запасной на Deno Deploy).
-  static const bridgeUrls = ['https://deep-cinema.kozenkov-nikita-vladimirovich.workers.dev', 'https://deep-cinema-vercel.vercel.app'];
+  static const bridgeUrl = 'https://deep-cinema.kozenkov-nikita-vladimirovich.workers.dev';
 
   static const publicRepo = 'kozenkovnikitavladimirovich-max/deep-cinema-app';
   static const _update = String.fromEnvironment('UPDATE_TOKEN', defaultValue: '');

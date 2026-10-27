@@ -26,9 +26,6 @@ Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   // Пульт на некоторых телевизорах присылает одно нажатие дважды подряд — из-за этого
   // фокус перескакивал через полку. Повтор той же клавиши быстрее 90 мс отбрасываем.
-  // ТВ: соединяться только по IPv4. На некоторых сетях IPv6 у телевизора «полурабочий»:
-  // запросы висели до таймаута, и помогало только переподключение Wi‑Fi.
-  if (Platform.isAndroid) HttpOverrides.global = _Ipv4First();
   if (Platform.isAndroid) {
     LogicalKeyboardKey? lastKey;
     var lastAt = DateTime.fromMillisecondsSinceEpoch(0);
@@ -71,25 +68,3 @@ Future<void> main() async {
   TorrServer.instance.ensureRunning().catchError((_) {});
 }
 
-
-class _Ipv4First extends HttpOverrides {
-  @override
-  HttpClient createHttpClient(SecurityContext? context) {
-    final client = super.createHttpClient(context);
-    client.connectionFactory = (uri, proxyHost, proxyPort) async {
-      final host = proxyHost ?? uri.host;
-      final port = proxyPort ?? (uri.hasPort ? uri.port : (uri.scheme == 'https' ? 443 : 80));
-      Object target = host;
-      try {
-        final list = await InternetAddress.lookup(host, type: InternetAddressType.IPv4);
-        if (list.isNotEmpty) target = list.first;
-      } catch (_) {}
-      // Через прокси шифрованный туннель делает сам HttpClient; напрямую — шифруем здесь.
-      final secure = uri.scheme == 'https' && proxyHost == null;
-      Future<Socket> socket = Socket.connect(target, port, timeout: const Duration(seconds: 12));
-      if (secure) socket = socket.then((s) => SecureSocket.secure(s, host: uri.host, context: context));
-      return ConnectionTask.fromSocket(socket, () {});
-    };
-    return client;
-  }
-}

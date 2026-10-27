@@ -381,27 +381,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
         ],
         'net' => [
           SettingsRow(
-            title: 'Мост',
-            hint: Relay.bridge != null ? 'сейчас работает: ${Relay.bridge!.replaceFirst(RegExp(r'^https?://'), '')}' : 'ни один мост сейчас не отвечает',
-            value: s.bridgeUrl.isNotEmpty ? 'свой' : (Keys.bridgeUrls.isNotEmpty ? 'встроенный' : 'не настроен'),
+            title: 'Мост (Cloudflare)',
+            hint: 'свой бесплатный мост: вход в аккаунт и синхронизация, описания и постеры (картинкам без VPN может не хватить скорости)',
+            value: s.bridgeUrl.isNotEmpty ? s.bridgeUrl.replaceFirst(RegExp(r'^https?://'), '') : (Keys.bridgeUrl.isNotEmpty ? 'встроенный' : 'не настроен'),
             onTap: () async {
-              await _text('bridgeUrl', 'Адреса мостов',
-                  message: 'Свой мост на Cloudflare Workers или Deno Deploy (инструкция — tool/bridge/README.md). Можно несколько через пробел: '
-                      'программа возьмёт первый, который работает. Пусто — встроенные.',
-                  hint: 'https://….deno.dev https://….workers.dev');
+              await _text('bridgeUrl', 'Адрес моста', message: 'Адрес вашего Worker на Cloudflare, например https://deep-cinema.ваше-имя.workers.dev. Пусто — встроенный. Инструкция — в файле tool/bridge/README.md.', hint: 'https://…workers.dev');
               Tmdb.instance.resetClient();
-              await Relay.probeBridges(force: true);
               _set(() {});
-            },
-          ),
-          SettingsRow(
-            title: 'Проверить мосты',
-            hint: Relay.bridgeStatus.isEmpty ? 'какой мост сейчас доступен без VPN' : [for (final e in Relay.bridgeStatus.entries) '${Uri.tryParse(e.key)?.host ?? e.key}: ${e.value}'].join('\n'),
-            chevron: false,
-            onTap: () async {
-              await Relay.probeBridges(force: true);
-              _set(() {});
-              if (mounted) showToast(context, Relay.bridge != null ? 'Работает: ${Relay.bridge!.replaceFirst(RegExp(r'^https?://'), '')}' : 'Ни один мост не отвечает — без VPN мост недоступен');
             },
           ),
           SettingsRow(

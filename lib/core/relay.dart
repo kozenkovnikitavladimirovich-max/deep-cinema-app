@@ -39,7 +39,6 @@ class Relay {
   static Future<void> probeImages() => _imageProbe ??= _probeImages();
 
   static Future<void> _probeImages() async {
-    await probeBridges();
     if (AppSettings.instance.tmdbImageBase != AppSettings.defaultImageBase) return;
     const path = '/w92/qJ2tW6WMUDux911r6m7haRef0WH.jpg';
     final direct = Uri.parse('https://image.tmdb.org/t/p$path');
@@ -83,92 +82,11 @@ class Relay {
 
   /// Свой мост на Cloudflare (работает всегда, без включённого компьютера).
   static String? get bridge {
-    final c = _chosen;
-    if (c != null) return c.isEmpty ? null : c;
-    final all = bridges;
-    return all.isEmpty ? null : all.first;
-  }
-
-  /// Мост для аккаунтов — постоянный «дом» аккаунтов: встроенный мост (Cloudflare), а не
-  /// тот, что первым стоит в настройках. Иначе аккаунт оказывался то на одном мосту,
-  /// то на другом (например, на Vercel, который без VPN не открывается). Короткие ответы
-  /// входа и синхронизации проходят и через замедленный Cloudflare.
-  static String? get accountBridge {
-    for (final raw in Keys.bridgeUrls) {
-      var b = raw.trim();
-      while (b.endsWith('/')) {
-        b = b.substring(0, b.length - 1);
-      }
-      if (b.isNotEmpty) return b.startsWith('http') ? b : 'https://$b';
-    }
-    final all = bridges;
-    return all.isEmpty ? null : all.first;
-  }
-
-  /// Все известные мосты: свои из настроек (через пробел или запятую), затем встроенные.
-  static List<String> get bridges {
-    final out = <String>[];
-    for (final raw in [...AppSettings.instance.bridgeUrl.split(RegExp(r'[\s,;]+')), ...Keys.bridgeUrls]) {
-      var b = raw.trim();
-      if (b.isEmpty) continue;
-      if (!b.startsWith('http')) b = 'https://$b';
-      while (b.endsWith('/')) {
-        b = b.substring(0, b.length - 1);
-      }
-      if (!out.contains(b)) out.add(b);
-    }
-    return out;
-  }
-
-  /// Какой мост выбран проверкой ('' — ни один не работает).
-  static String? _chosen;
-  static Future<void>? _bridgeProbe;
-
-  /// Как работает каждый мост (для настроек): адрес → «работает» / причина.
-  static final Map<String, String> bridgeStatus = {};
-
-  /// Проверить мосты: какой реально отдаёт данные (а не только первые килобайты —
-  /// у замедленного Cloudflare маленькие ответы проходят, большие застревают).
-  static Future<void> probeBridges({bool force = false}) {
-    if (force) _bridgeProbe = null;
-    return _bridgeProbe ??= _probeBridges();
-  }
-
-  static Future<void> _probeBridges() async {
-    final all = bridges;
-    if (all.isEmpty) {
-      _chosen = '';
-      return;
-    }
-    // Постер ~60 КБ: проходит, только если мост не душат.
-    final test = Uri.parse('https://image.tmdb.org/t/p/w500/qJ2tW6WMUDux911r6m7haRef0WH.jpg');
-    final ok = <String>{};
-    await Future.wait(all.map((b) async {
-      // Короткий запрос: хватает ли моста для входа и синхронизации.
-      var small = false;
-      try {
-        final r = await http.get(Uri.parse('$b/')).timeout(const Duration(seconds: 8));
-        small = r.statusCode < 500;
-      } catch (_) {}
-      final acc = b == accountBridge ? (small ? ' · аккаунт: работает' : ' · аккаунт: нет связи') : '';
-      final sw = Stopwatch()..start();
-      try {
-        final r = await http.get(Uri.parse('$b/p').replace(queryParameters: {'u': test.toString()})).timeout(const Duration(seconds: 9));
-        if (r.statusCode == 200 && r.bodyBytes.length > 20000) {
-          ok.add(b);
-          bridgeStatus[b] = 'работает (${sw.elapsedMilliseconds} мс)$acc';
-        } else {
-          bridgeStatus[b] = 'ответ ${r.statusCode}$acc';
-        }
-      } on TimeoutException {
-        bridgeStatus[b] = small ? 'картинки: медленно$acc' : 'не отвечает (замедлен или заблокирован)$acc';
-      } catch (e) {
-        bridgeStatus[b] = small ? 'картинки: нет$acc' : 'не открывается$acc';
-      }
-    }));
-    // По порядку предпочтения: на первом мосту хранятся аккаунты.
-    _chosen = all.firstWhere(ok.contains, orElse: () => '');
-    debugPrint('bridge: $_chosen $bridgeStatus');
+    var b = AppSettings.instance.bridgeUrl.trim();
+    // Временные мосты (Vercel, Deno) больше не используются — только Cloudflare.
+    if (b.isEmpty || b.contains('vercel.app') || b.contains('deno.dev')) b = Keys.bridgeUrl;
+    if (b.isEmpty) return null;
+    return b.endsWith('/') ? b.substring(0, b.length - 1) : b;
   }
 
   /// Компьютер с Deep Cinema в домашней сети (только для ТВ).
