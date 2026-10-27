@@ -22,3 +22,8 @@ move 160 270
 shot hover-menu-item
 move 160 330
 shot hover-menu-item2
+click 160 330
+wait 2
+move 800 300
+move 820 320
+shot after-menu-click-hover

@@ -18,7 +18,8 @@ class SideButtons {
     final dispatcher = ui.PlatformDispatcher.instance;
     final original = dispatcher.onPointerDataPacket;
     if (original == null) return;
-    final sideDown = <int>{}; // устройства, у которых зажата боковая кнопка
+    final sideDown = <int>{}; // устройства, у которых зажата боковая кнопка (движок считает мышь нажатой)
+    final fwDown = <int>{}; // из них — те, где программе передано нажатие обычной кнопки
     dispatcher.onPointerDataPacket = (packet) {
       var changed = false;
       final out = <ui.PointerData>[];
@@ -29,19 +30,28 @@ class SideButtons {
         }
         final side = d.buttons & _side;
         final rest = d.buttons & ~_side;
+        final dev = d.device;
         if (d.change == ui.PointerChange.down && side != 0 && rest == 0) {
-          // Нажата только боковая кнопка: «назад» сразу, движку — обычное движение мыши.
-          // Само нажатие движку не передаём (иначе в плеере оно выглядело бы как движение
-          // мыши и снова показывало панель).
-          if (sideDown.add(d.device) && (side & kBackMouseButton) != 0) scheduleMicrotask(() => onBack?.call());
+          // Нажата только боковая кнопка: «назад», а само нажатие программе не передаём
+          // (в плеере оно выглядело бы как движение мыши и снова показывало панель).
+          if (sideDown.add(dev) && (side & kBackMouseButton) != 0) scheduleMicrotask(() => onBack?.call());
           changed = true;
-        } else if (sideDown.contains(d.device) && d.change == ui.PointerChange.up) {
-          sideDown.remove(d.device); // отпускание тоже не передаём
+        } else if (sideDown.contains(dev) && d.change == ui.PointerChange.up) {
+          // Отпускание боковой кнопки не передаём; если была зажата и обычная — отпускаем её.
+          sideDown.remove(dev);
+          if (fwDown.remove(dev)) out.add(_copy(d, ui.PointerChange.up, 0));
           changed = true;
-        } else if (sideDown.contains(d.device) && d.change == ui.PointerChange.move) {
-          if (side == 0) sideDown.remove(d.device);
-          // Мышь двигают с зажатой боковой кнопкой — для движка это обычное движение.
-          out.add(rest == 0 ? _hover(d) : d);
+        } else if (sideDown.contains(dev) && d.change == ui.PointerChange.move) {
+          // Пока движок считает боковую кнопку зажатой, движения и щелчки обычной кнопкой
+          // пересказываем программе как обычно (наведение, нажатие, отпускание).
+          if (rest != 0) {
+            out.add(_copy(d, fwDown.add(dev) ? ui.PointerChange.down : ui.PointerChange.move, rest));
+          } else if (fwDown.remove(dev)) {
+            out.add(_copy(d, ui.PointerChange.up, 0));
+          } else {
+            out.add(_copy(d, ui.PointerChange.hover, 0));
+          }
+          if (side == 0 && !fwDown.contains(dev)) sideDown.remove(dev);
           changed = true;
         } else {
           out.add(d);
@@ -55,12 +65,12 @@ class SideButtons {
     };
   }
 
-  /// То же событие, но как простое движение мыши без нажатых кнопок.
-  static ui.PointerData _hover(ui.PointerData d) => ui.PointerData(
+  /// То же событие с другим видом (движение, нажатие, отпускание) и кнопками.
+  static ui.PointerData _copy(ui.PointerData d, ui.PointerChange change, int buttons) => ui.PointerData(
         viewId: d.viewId,
         embedderId: d.embedderId,
         timeStamp: d.timeStamp,
-        change: ui.PointerChange.hover,
+        change: change,
         kind: d.kind,
         signalKind: d.signalKind,
         device: d.device,
@@ -69,10 +79,10 @@ class SideButtons {
         physicalY: d.physicalY,
         physicalDeltaX: d.physicalDeltaX,
         physicalDeltaY: d.physicalDeltaY,
-        buttons: 0,
+        buttons: buttons,
         obscured: d.obscured,
         synthesized: d.synthesized,
-        pressure: 0,
+        pressure: buttons == 0 ? 0 : d.pressure,
         pressureMin: d.pressureMin,
         pressureMax: d.pressureMax,
         distance: d.distance,
