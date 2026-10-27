@@ -41,6 +41,7 @@ class FocusKeeper extends StatefulWidget {
 class _FocusKeeperState extends State<FocusKeeper> {
   FocusScopeNode? _scope;
   bool _pending = false;
+  int _waits = 0;
 
   @override
   void initState() {
@@ -78,9 +79,13 @@ class _FocusKeeperState extends State<FocusKeeper> {
         if (p != null && p != scope && !_isBelow(p, scope)) return;
         final first = scope.traversalDescendants.where((n) => n.canRequestFocus && n.context != null && !n.skipTraversal).firstOrNull;
         if (first != null) {
+          _waits = 0;
           first.requestFocus();
-        } else if (p != scope) {
-          scope.requestFocus();
+        } else {
+          if (p != scope) scope.requestFocus();
+          // Страница ещё грузится — пунктов нет. Ждём их и ставим фокус, как только появятся
+          // (иначе фокус оставался «на странице», и пульт ничего не делал).
+          if (_waits++ < 60) Timer(const Duration(milliseconds: 250), _check);
         }
       });
     });
