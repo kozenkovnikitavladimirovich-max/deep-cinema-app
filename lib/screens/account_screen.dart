@@ -231,6 +231,7 @@ class LoginDialog extends StatefulWidget {
 
 class _LoginDialogState extends State<LoginDialog> {
   LoginCode? _code;
+  String? _codeError; // не получился код для ya.ru/device (QR при этом ещё работает)
   String? _qr; // адрес входа Яндексом по QR (без ввода кода)
   String? _error;
   bool _closed = false;
@@ -254,6 +255,7 @@ class _LoginDialogState extends State<LoginDialog> {
     setState(() {
       _error = null;
       _code = null;
+      _codeError = null;
       _qr = null;
     });
     final a = Account.instance;
@@ -292,6 +294,7 @@ class _LoginDialogState extends State<LoginDialog> {
       track(a.waitLogin(code, cancelled: () => stop() || a.signedIn));
     } catch (e) {
       lastError = e;
+      if (mounted && !stop()) setState(() => _codeError = e is AuthException ? e.message : '$e');
     }
     starting = false;
     finish();
@@ -352,8 +355,17 @@ class _LoginDialogState extends State<LoginDialog> {
               Row(children: [
                 const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2)),
                 const SizedBox(width: 10),
-                Text('Жду подтверждения…', style: TextStyle(fontSize: 15, color: c.muted)),
+                Flexible(
+                  child: ValueListenableBuilder<String>(
+                    valueListenable: Account.instance.loginStatus,
+                    builder: (_, st, __) => Text(qr != null && st.isNotEmpty ? st : 'Жду подтверждения…', style: TextStyle(fontSize: 15, color: c.muted)),
+                  ),
+                ),
               ]),
+              if (qr != null && code == null && _codeError != null) ...[
+                const SizedBox(height: 8),
+                Text('Код для ya.ru/device: $_codeError', style: TextStyle(fontSize: 13, color: c.muted)),
+              ],
             ]),
           ),
         ]),

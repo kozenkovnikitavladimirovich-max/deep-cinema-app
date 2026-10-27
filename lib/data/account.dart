@@ -292,7 +292,7 @@ class Account extends ChangeNotifier {
               'device_name': _deviceName,
             });
     } catch (e) {
-      throw AuthException('Нет связи с ${p.title}. Проверьте интернет.');
+      throw AuthException('Нет связи с ${p.title} (${_short(e)})');
     }
     final j = _json(r.body);
     if (r.statusCode != 200) throw AuthException('${p.title} не выдал код: ${j['error_description'] ?? j['error'] ?? r.statusCode}');
@@ -374,26 +374,43 @@ class Account extends ChangeNotifier {
   /// Ждать, пока пользователь подтвердит вход на телефоне.
   Future<void> waitQr(String state, {required bool Function() cancelled}) async {
     final until = DateTime.now().add(const Duration(minutes: 10));
+    var polls = 0;
+    _status('Жду подтверждения…');
     while (!cancelled()) {
       if (DateTime.now().isAfter(until)) throw AuthException('QR-код устарел — откройте вход заново');
       await Future<void>.delayed(const Duration(seconds: 3));
       if (cancelled()) return;
       Map<String, dynamic> j;
+      polls++;
       try {
         final r = await http.get(Uri.parse('${Relay.bridge}/ya/poll?state=$state')).timeout(const Duration(seconds: 15));
-        if (r.statusCode != 200) continue;
+        if (r.statusCode != 200) {
+          _status('Мост ответил ${r.statusCode} (попытка $polls), жду…');
+          continue;
+        }
         j = _json(utf8.decode(r.bodyBytes));
-      } catch (_) {
+      } catch (e) {
+        _status('Мост не отвечает (попытка $polls): ${_short(e)}');
         continue;
       }
-      if (j['pending'] == true) continue;
+      if (j['pending'] == true) {
+        _status('Жду подтверждения… (мост на связи, проверка $polls)');
+        continue;
+      }
       if (j['error'] != null) throw AuthException('Вход отменён');
       final code = '${j['code'] ?? ''}';
       if (code.isEmpty) continue;
-      final r = await _tokenRequest(AuthProvider.yandex, {'grant_type': 'authorization_code', 'code': code});
+      _status('Подтверждение получено, завершаю вход…');
+      final http.Response r;
+      try {
+        r = await _tokenRequest(AuthProvider.yandex, {'grant_type': 'authorization_code', 'code': code});
+      } catch (e) {
+        throw AuthException('Не удалось завершить вход: ${_short(e)}');
+      }
       final t = _json(r.body);
       if (r.statusCode != 200 || t['access_token'] == null) throw AuthException('Яндекс: ${t['error_description'] ?? t['error'] ?? r.statusCode}');
       if (cancelled()) return;
+      _status('Вход выполнен, загружаю профиль…');
       await _finishLogin(AuthProvider.yandex, t);
       return;
     }
@@ -436,6 +453,14 @@ class Account extends ChangeNotifier {
   // а одноразовый код из QR нельзя «потратить» на попытку, ответ которой потерялся.
   static bool _yandexViaBridge = _isTv();
 
+  /// Что окно входа делает прямо сейчас — показывается под QR-кодом (видно, где обрыв).
+  final loginStatus = ValueNotifier<String>('');
+  void _status(String s) => loginStatus.value = s;
+  static String _short(Object e) {
+    final t = '$e'.replaceFirst('Exception: ', '').replaceAll('\n', ' ');
+    return t.length > 140 ? '${t.substring(0, 140)}…' : t;
+  }
+
   static bool _isTv() {
     try {
       return Platform.isAndroid;
@@ -446,11 +471,23 @@ class Account extends ChangeNotifier {
 
   Future<http.Response> _yandex(Uri u, {Map<String, String>? form, Map<String, String> headers = const {}}) async {
     final br = Relay.bridge;
+    Object? bridgeError;
     if (_yandexViaBridge && br != null) {
       try {
         return await _yandexBridge(br, u, form: form, headers: headers);
-      } catch (_) {
+      } catch (e) {
         // мост не ответил — пробуем напрямую
+        bridgeError = e;
+      }
+    }
+    if (bridgeError != null) {
+      try {
+        final r = form != null
+            ? await http.post(u, headers: headers, body: form).timeout(const Duration(seconds: 20))
+            : await http.get(u, headers: headers).timeout(const Duration(seconds: 20));
+        return r;
+      } catch (e) {
+        throw Exception('через мост: ${_short(bridgeError)}; напрямую: ${_short(e)}');
       }
     }
     try {
