@@ -432,7 +432,17 @@ class Account extends ChangeNotifier {
   // подтверждён, а вход не завершается). Тогда тот же запрос идёт через мост (/t),
   // как для трекеров. После первой неудачи до конца запуска сразу идём через мост.
 
-  static bool _yandexViaBridge = false;
+  // На телевизоре сразу через мост: напрямую серверы входа Яндекса там не открываются,
+  // а одноразовый код из QR нельзя «потратить» на попытку, ответ которой потерялся.
+  static bool _yandexViaBridge = _isTv();
+
+  static bool _isTv() {
+    try {
+      return Platform.isAndroid;
+    } catch (_) {
+      return false;
+    }
+  }
 
   Future<http.Response> _yandex(Uri u, {Map<String, String>? form, Map<String, String> headers = const {}}) async {
     final br = Relay.bridge;

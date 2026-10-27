@@ -277,7 +277,13 @@ class _LoginDialogState extends State<LoginDialog> {
     if (widget.provider == AuthProvider.yandex && Account.yandexQr) {
       final state = Account.newQrState();
       setState(() => _qr = Account.qrUrl(state));
-      track(a.waitQr(state, cancelled: stop));
+      // Ошибку QR показываем сразу: иначе окно молча ждёт второй способ (код) до 10 минут.
+      track(a.waitQr(state, cancelled: stop).catchError((Object e) {
+        if (!stop() && !a.signedIn && !done.isCompleted) {
+          lastError = e;
+          done.complete();
+        }
+      }));
     }
     try {
       final code = await a.startLogin(widget.provider);
