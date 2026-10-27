@@ -29,6 +29,16 @@ class DeepCinemaApp extends StatelessWidget {
     RootShell.back();
   }
 
+  /// Нажата боковая кнопка мыши «назад» (номер указателя).
+  static int? _backPointer;
+
+  static void _releaseBack(int? pointer) {
+    final p = _backPointer;
+    if (p == null || (pointer != null && pointer != p)) return;
+    _backPointer = null;
+    goBack();
+  }
+
   @override
   Widget build(BuildContext context) {
     return ListenableBuilder(
@@ -59,10 +69,18 @@ class DeepCinemaApp extends StatelessWidget {
                 Positioned.fill(
                   child: Listener(
                     behavior: HitTestBehavior.translucent,
+                    // Боковая кнопка мыши «назад» срабатывает, когда её отпустили (как в браузере).
+                    // Раньше экран закрывался прямо в момент нажатия — сигнал «отпущена» терялся,
+                    // программа считала кнопку зажатой, и подсветка под курсором больше не работала.
                     onPointerDown: (e) {
-                      if (e.kind == PointerDeviceKind.mouse && (e.buttons & kBackMouseButton) != 0) goBack();
+                      if (e.kind == PointerDeviceKind.mouse && (e.buttons & kBackMouseButton) != 0) _backPointer = e.pointer;
                     },
-                    onPointerHover: (_) => notePointerMoved(),
+                    onPointerUp: (e) => _releaseBack(e.pointer),
+                    onPointerCancel: (e) => _backPointer = null,
+                    onPointerHover: (e) {
+                      _releaseBack(null); // движение без нажатых кнопок — значит, уже отпущена
+                      notePointerMoved();
+                    },
                     onPointerMove: (_) => notePointerMoved(),
                     child: HoverReset(child: child ?? const SizedBox.shrink()),
                   ),
