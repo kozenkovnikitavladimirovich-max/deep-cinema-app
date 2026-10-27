@@ -535,7 +535,8 @@ class _ShelfRowState extends State<ShelfRow> {
   Rect? get _rect {
     final ro = context.findRenderObject();
     if (ro is! RenderBox || !ro.attached || !ro.hasSize) return null;
-    return ro.localToGlobal(Offset.zero) & ro.size;
+    // В экранных координатах, как у фокуса (на ТВ интерфейс уменьшен под экран).
+    return MatrixUtils.transformRect(ro.getTransformTo(null), Offset.zero & ro.size);
   }
 
   Iterable<FocusNode> get _items => _node.traversalDescendants.where((n) => n.canRequestFocus && n.context != null && n.context!.mounted);
@@ -576,7 +577,8 @@ class _ShelfRowState extends State<ShelfRow> {
         if (y > lo && y < hi && n.rect.overlaps(Rect.fromLTRB(me.left, lo, me.right, hi))) return KeyEventResult.ignored;
       }
     }
-    final screenW = MediaQuery.sizeOf(context).width;
+    // Ширина настоящего экрана (MediaQuery внутри — в размерах интерфейса до уменьшения).
+    final screenW = MediaQueryData.fromView(View.of(context)).size.width;
     final x = cur.rect.center.dx;
     FocusNode? target;
     var dist = double.infinity;

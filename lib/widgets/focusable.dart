@@ -131,11 +131,14 @@ class _FocusableState extends State<Focusable> {
   bool _revealTop() {
     final ro = context.findRenderObject();
     final scroll = Scrollable.maybeOf(context, axis: Axis.vertical);
-    if (ro == null || scroll == null || !ro.attached) return false;
-    final viewport = RenderAbstractViewport.maybeOf(ro);
-    if (viewport == null) return false;
+    if (ro is! RenderBox || scroll == null || !ro.attached) return false;
+    final vp = scroll.context.findRenderObject();
+    if (vp is! RenderBox || !vp.attached || !vp.hasSize) return false;
     final pos = scroll.position;
-    final offsetAtTop = viewport.getOffsetToReveal(ro, 0).offset;
+    // Где элемент на всей странице (а не в своей полке): сверху страницы — на сколько ниже её начала.
+    final top = ro.localToGlobal(Offset.zero, ancestor: vp).dy;
+    final offsetAtTop = pos.pixels + top;
+    if (const bool.fromEnvironment('DC_FOCUS_LOG')) debugPrint('DCSCROLL revealTop pageTop=${offsetAtTop.round()} pixels=${pos.pixels.round()} vh=${pos.viewportDimension.round()}');
     if (offsetAtTop > pos.viewportDimension * .55 || pos.pixels <= pos.minScrollExtent) return false;
     if (_jump) {
       pos.jumpTo(pos.minScrollExtent);
@@ -149,7 +152,10 @@ class _FocusableState extends State<Focusable> {
   bool _fullyVisible() {
     final ro = context.findRenderObject();
     if (ro is! RenderBox || !ro.attached || !ro.hasSize) return false;
-    final r = ro.localToGlobal(Offset.zero) & ro.size;
+    // Всё — в экранных координатах (на ТВ интерфейс уменьшен под экран: размеры без учёта
+    // этого уменьшения раньше давали «всё видно», и экран не прокручивался за фокусом).
+    Rect global(RenderBox b) => MatrixUtils.transformRect(b.getTransformTo(null), Offset.zero & b.size);
+    final r = global(ro);
     BuildContext? ctx = context;
     var found = false;
     while (ctx != null) {
@@ -158,7 +164,7 @@ class _FocusableState extends State<Focusable> {
       found = true;
       final vp = s.context.findRenderObject();
       if (vp is! RenderBox || !vp.attached || !vp.hasSize) return false;
-      final b = (vp.localToGlobal(Offset.zero) & vp.size).deflate(6);
+      final b = global(vp).deflate(6);
       if (r.left < b.left || r.top < b.top || r.right > b.right || r.bottom > b.bottom) return false;
       ctx = s.context;
     }
@@ -207,7 +213,14 @@ class _FocusableState extends State<Focusable> {
           // Элемент в самом верху страницы — показываем страницу с самого начала
           // (иначе баннер над верхней кнопкой оставался обрезанным).
           if (_revealTop()) return;
-          if (_fullyVisible()) return;
+          if (_fullyVisible()) {
+            if (const bool.fromEnvironment('DC_FOCUS_LOG')) debugPrint('DCSCROLL fullyVisible -> no scroll');
+            return;
+          }
+          if (const bool.fromEnvironment('DC_FOCUS_LOG')) {
+            final v = Scrollable.maybeOf(context, axis: Axis.vertical)?.position;
+            debugPrint('DCSCROLL ensureVisible pixels=${v?.pixels.round()} max=${v?.maxScrollExtent.round()} vh=${v?.viewportDimension.round()}');
+          }
           Scrollable.ensureVisible(
             context,
             alignment: .5,
