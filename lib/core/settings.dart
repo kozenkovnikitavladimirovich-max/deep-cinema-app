@@ -325,7 +325,23 @@ class AppSettings extends ChangeNotifier {
 
   /// Принять настройки из аккаунта (если они новее здешних). Пустые ключи не затирают свои.
   bool applySynced(Map<String, dynamic> m, int at) {
-    if (at <= prefsAt) return false;
+    // Ключ сервиса, которого на этом устройстве нет, берём из аккаунта всегда — даже если
+    // остальные настройки здесь новее (иначе новый телевизор так и оставался без ключей).
+    var filled = false;
+    for (final k in _syncedStrings) {
+      if (!k.endsWith('Key')) continue;
+      final v = m[k];
+      if (v is! String || v.isEmpty || service(k).isNotEmpty) continue;
+      final keep = prefsAt;
+      setService(k, v);
+      prefsAt = keep;
+      _prefs?.setInt('prefsAt', prefsAt);
+      filled = true;
+    }
+    if (at <= prefsAt) {
+      if (filled) notifyListeners();
+      return filled;
+    }
     for (final k in _syncedStrings) {
       final v = m[k];
       if (v is! String) continue;
