@@ -264,7 +264,7 @@ class _PlayerScreenState extends State<PlayerScreen> {
     final k = e.logicalKey;
     // «Назад» не показывает панель: иначе панель появлялась и тут же пряталась этим же
     // нажатием, и из плеера было не выйти (при скрытой панели «Назад» — выход).
-    const back = {LogicalKeyboardKey.goBack, LogicalKeyboardKey.escape, LogicalKeyboardKey.browserBack, LogicalKeyboardKey.gameButtonB};
+    final back = {LogicalKeyboardKey.goBack, LogicalKeyboardKey.escape, LogicalKeyboardKey.browserBack, LogicalKeyboardKey.gameButtonB};
     if (back.contains(k)) return KeyEventResult.ignored;
     _poke();
     final ok = {LogicalKeyboardKey.select, LogicalKeyboardKey.enter, LogicalKeyboardKey.numpadEnter, LogicalKeyboardKey.gameButtonA};
