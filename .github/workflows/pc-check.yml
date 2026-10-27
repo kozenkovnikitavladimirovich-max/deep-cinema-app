@@ -39,7 +39,7 @@ jobs:
           flutter pub get >> build.log 2>&1
           flutter analyze --no-fatal-infos --no-fatal-warnings > analyze.txt 2>&1 || true
           grep -E "error •" analyze.txt | head -30 | while read -r l; do echo "::error title=analyze::$l"; done || true
-          flutter build linux --release >> build.log 2>&1 || { echo "::error title=Linux::$(tail -n 40 build.log | sed ':a;N;$!ba;s/%/%25/g;s/\r//g;s/\n/%0A/g')"; exit 1; }
+          flutter build linux --release --dart-define=DC_FOCUS_LOG=true >> build.log 2>&1 || { echo "::error title=Linux::$(tail -n 40 build.log | sed ':a;N;$!ba;s/%/%25/g;s/\r//g;s/\n/%0A/g')"; exit 1; }
       - name: Мышь и клавиатура
         run: |
           ffmpeg -loglevel error -f lavfi -i "testsrc2=size=1280x720:rate=25" -f lavfi -i "sine=frequency=440" -t 120 -c:v libx264 -preset ultrafast -c:a aac /tmp/test.mkv

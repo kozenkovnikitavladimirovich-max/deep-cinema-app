@@ -37,8 +37,9 @@ while IFS= read -r -u 3 line || [ -n "$line" ]; do
     wait) sleep "$2" ;;
     move) move "$2" "$3"; sleep 0.6 ;;
     click) move "$2" "$3"; xdotool click 1; sleep 1 ;;
+    back) xdotool click 8; sleep 1 ;;   # боковая кнопка мыши «назад»
     key) c=${3:-1}; for _ in $(seq "$c"); do xdotool key "$2"; sleep 0.5; done; sleep 0.8 ;;
-    shot) n=$((n+1)); import -window root "$(printf 'shots/%02d-%s.png' $n "$2")" ;;
+    shot) echo "DCSHOT $2" >> shots/app.log; n=$((n+1)); import -window root "$(printf 'shots/%02d-%s.png' $n "$2")" ;;
   esac
 done
 [ -n "$pid" ] && kill $pid 2>/dev/null
