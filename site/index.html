@@ -1,0 +1,262 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Deep Cinema</title>
+<meta name="description" content="Deep Cinema — домашний кинотеатр для Android TV и Windows">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#08080b; --bg2:#101015; --text:#f4f4f6; --muted:#9a9aa6; --stroke:rgba(255,255,255,.09);
+  --glass:rgba(255,255,255,.06); --glass2:rgba(255,255,255,.1);
+  --a1:#7b5cff; --a2:#3d7bff; --a3:#ff5c9a;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--text);font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,sans-serif;overflow-x:hidden;-webkit-font-smoothing:antialiased}
+a{color:inherit;text-decoration:none}
+.wrap{max-width:1180px;margin:0 auto;padding:0 24px}
+
+/* ── шапка ── */
+header{position:fixed;inset:0 0 auto 0;z-index:20;transition:background .3s,backdrop-filter .3s}
+header.solid{background:rgba(8,8,11,.7);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);border-bottom:1px solid var(--stroke)}
+.nav{display:flex;align-items:center;justify-content:space-between;height:72px}
+.brand{display:flex;align-items:center;gap:12px;font-weight:800;font-size:20px;letter-spacing:-.02em}
+.mark{width:38px;height:38px;border-radius:12px;background:linear-gradient(135deg,var(--a1),var(--a2));display:grid;place-items:center;box-shadow:0 8px 30px rgba(123,92,255,.45)}
+.mark svg{width:18px;height:18px;margin-left:2px}
+.nav a.pill{padding:10px 18px;border-radius:999px;background:var(--glass2);border:1px solid var(--stroke);font-weight:600;font-size:14px;transition:background .2s,transform .2s}
+.nav a.pill:hover{background:#fff;color:#111;transform:translateY(-1px)}
+
+/* ── первый экран ── */
+.hero{position:relative;min-height:100vh;display:flex;align-items:center;overflow:hidden;padding:120px 0 80px}
+.glow{position:absolute;border-radius:50%;filter:blur(90px);opacity:.55;pointer-events:none}
+.g1{width:620px;height:620px;background:var(--a1);top:-180px;left:-160px;animation:drift 18s ease-in-out infinite}
+.g2{width:520px;height:520px;background:var(--a2);bottom:-200px;right:-120px;animation:drift 22s ease-in-out infinite reverse}
+.g3{width:340px;height:340px;background:var(--a3);top:30%;right:30%;opacity:.22;animation:drift 26s ease-in-out infinite}
+@keyframes drift{0%,100%{transform:translate(0,0)}50%{transform:translate(60px,40px)}}
+.hero .wrap{position:relative;z-index:2;display:grid;grid-template-columns:1.05fr 1fr;gap:40px;align-items:center}
+.eyebrow{display:inline-flex;gap:8px;align-items:center;padding:7px 14px;border-radius:999px;background:var(--glass);border:1px solid var(--stroke);font-size:13px;font-weight:600;color:#cfcfe0}
+.dot{width:7px;height:7px;border-radius:50%;background:#3ddc84;box-shadow:0 0 10px #3ddc84}
+h1{font-size:clamp(44px,7vw,84px);line-height:.98;letter-spacing:-.045em;font-weight:900;margin:22px 0 20px}
+h1 .grad{background:linear-gradient(100deg,#fff 10%,#b9a8ff 45%,#7fb0ff 80%);-webkit-background-clip:text;background-clip:text;color:transparent}
+.lead{font-size:clamp(17px,1.6vw,20px);line-height:1.55;color:var(--muted);max-width:520px}
+.cta{display:flex;flex-wrap:wrap;gap:14px;margin-top:34px}
+.btn{display:inline-flex;align-items:center;gap:12px;padding:16px 26px;border-radius:999px;font-weight:700;font-size:16px;transition:transform .25s cubic-bezier(.2,.8,.2,1),box-shadow .25s,background .25s;border:1px solid var(--stroke)}
+.btn svg{width:20px;height:20px}
+.btn small{display:block;font-size:12px;font-weight:500;opacity:.65;margin-top:2px}
+.btn.primary{background:#fff;color:#0b0b0e;box-shadow:0 14px 40px rgba(255,255,255,.12)}
+.btn.primary:hover{transform:translateY(-3px) scale(1.02);box-shadow:0 20px 50px rgba(255,255,255,.2)}
+.btn.ghost{background:var(--glass);backdrop-filter:blur(10px)}
+.btn.ghost:hover{background:var(--glass2);transform:translateY(-3px)}
+.ver{margin-top:16px;font-size:13px;color:var(--muted)}
+
+/* постеры на первом экране */
+.stage{position:relative;height:560px;perspective:1400px}
+.deck{position:absolute;inset:0;transform-style:preserve-3d;transition:transform .2s ease-out}
+.poster{position:absolute;width:190px;height:285px;border-radius:20px;overflow:hidden;box-shadow:0 30px 60px rgba(0,0,0,.55);border:1px solid rgba(255,255,255,.08);animation:float 7s ease-in-out infinite}
+.poster::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(255,255,255,.18),transparent 35%,rgba(0,0,0,.55))}
+.poster b{position:absolute;left:16px;right:16px;bottom:18px;z-index:2;font-size:19px;font-weight:900;letter-spacing:-.02em;line-height:1.05;text-transform:uppercase}
+.poster i{position:absolute;top:12px;right:12px;z-index:2;font-style:normal;font-size:12px;font-weight:700;padding:4px 8px;border-radius:8px;background:rgba(0,0,0,.55);backdrop-filter:blur(6px)}
+@keyframes float{0%,100%{translate:0 0}50%{translate:0 -14px}}
+
+/* ── блоки ── */
+section{padding:110px 0;position:relative}
+h2{font-size:clamp(32px,4.4vw,52px);letter-spacing:-.04em;font-weight:800;line-height:1.05;margin-bottom:16px}
+.sub{color:var(--muted);font-size:18px;line-height:1.55;max-width:620px}
+.reveal{opacity:0;transform:translateY(40px);transition:opacity .9s cubic-bezier(.2,.8,.2,1),transform .9s cubic-bezier(.2,.8,.2,1)}
+.reveal.in{opacity:1;transform:none}
+.features{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;margin-top:48px}
+.card{padding:28px;border-radius:26px;background:linear-gradient(180deg,rgba(255,255,255,.07),rgba(255,255,255,.03));border:1px solid var(--stroke);transition:transform .35s cubic-bezier(.2,.8,.2,1),border-color .3s,background .3s}
+.card:hover{transform:translateY(-6px) scale(1.015);border-color:rgba(255,255,255,.22);background:linear-gradient(180deg,rgba(255,255,255,.1),rgba(255,255,255,.04))}
+.ico{width:48px;height:48px;border-radius:15px;display:grid;place-items:center;margin-bottom:18px;font-size:22px}
+.card h3{font-size:20px;letter-spacing:-.02em;margin-bottom:8px}
+.card p{color:var(--muted);line-height:1.5;font-size:15px}
+
+/* окно «интерфейс» */
+.screen{margin-top:54px;border-radius:30px;padding:14px;background:linear-gradient(180deg,#1a1a22,#0e0e13);border:1px solid var(--stroke);box-shadow:0 40px 120px rgba(61,123,255,.18)}
+.tv{border-radius:20px;overflow:hidden;background:#0b0b0f;aspect-ratio:16/9;position:relative}
+.tvhero{position:absolute;inset:0 0 42% 0;background:radial-gradient(120% 120% at 85% 10%,#4a52d8 0%,#1d1d3a 45%,#0b0b0f 75%)}
+.tvhero h4{position:absolute;left:5%;bottom:22%;font-size:clamp(20px,4vw,52px);font-weight:900;letter-spacing:-.04em}
+.tvhero .row{position:absolute;left:5%;bottom:6%;display:flex;gap:10px}
+.tvhero .row span{padding:8px 16px;border-radius:999px;background:rgba(255,255,255,.14);font-size:clamp(9px,1.1vw,14px);font-weight:600}
+.tvhero .row span:first-child{background:#fff;color:#111}
+.shelf{position:absolute;left:5%;right:-10%;bottom:7%;display:flex;gap:1.6%;animation:slide 26s linear infinite}
+.shelf div{flex:0 0 11%;aspect-ratio:2/3;border-radius:10px}
+.shelf div.f{outline:3px solid #fff;outline-offset:2px;transform:scale(1.07)}
+@keyframes slide{0%,100%{transform:translateX(0)}50%{transform:translateX(-14%)}}
+
+/* шаги */
+.tabs{display:inline-flex;gap:6px;padding:6px;border-radius:999px;background:var(--glass);border:1px solid var(--stroke);margin-top:34px}
+.tabs button{all:unset;cursor:pointer;padding:11px 20px;border-radius:999px;font-weight:600;font-size:15px;color:var(--muted);transition:background .25s,color .25s}
+.tabs button.on{background:#fff;color:#111}
+.steps{display:grid;gap:14px;margin-top:28px;max-width:760px}
+.step{display:flex;gap:18px;padding:22px;border-radius:22px;background:var(--glass);border:1px solid var(--stroke);animation:pop .5s cubic-bezier(.2,.8,.2,1) both}
+.step:nth-child(2){animation-delay:.06s}.step:nth-child(3){animation-delay:.12s}.step:nth-child(4){animation-delay:.18s}
+@keyframes pop{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+.num{flex:0 0 36px;height:36px;border-radius:12px;display:grid;place-items:center;font-weight:800;background:linear-gradient(135deg,var(--a1),var(--a2))}
+.step b{display:block;font-size:17px;margin-bottom:4px}
+.step p{color:var(--muted);line-height:1.5;font-size:15px}
+.code{display:inline-block;font-family:ui-monospace,Menlo,monospace;background:rgba(255,255,255,.1);padding:2px 8px;border-radius:7px;color:#fff}
+
+/* низ */
+.final{text-align:center;padding:120px 0 90px}
+.final .cta{justify-content:center}
+footer{border-top:1px solid var(--stroke);padding:28px 0;color:var(--muted);font-size:13px;text-align:center}
+
+@media (max-width:900px){
+  .hero .wrap{grid-template-columns:1fr}
+  .stage{height:380px;margin-top:10px}
+  .poster{width:130px;height:195px}
+  .poster b{font-size:14px}
+  .features{grid-template-columns:1fr}
+  section{padding:80px 0}
+}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}.reveal{opacity:1;transform:none}}
+</style>
+</head>
+<body>
+
+<header id="top">
+  <div class="wrap nav">
+    <a class="brand" href="#"><span class="mark"><svg viewBox="0 0 24 24" fill="#fff"><path d="M7 4.5v15l13-7.5z"/></svg></span>Deep Cinema</a>
+    <a class="pill" href="#download">Скачать</a>
+  </div>
+</header>
+
+<section class="hero">
+  <div class="glow g1"></div><div class="glow g2"></div><div class="glow g3"></div>
+  <div class="wrap">
+    <div>
+      <span class="eyebrow"><span class="dot"></span>Для своих · бесплатно</span>
+      <h1><span class="grad">Кино дома.</span><br>Без лишнего.</h1>
+      <p class="lead">Фильмы и сериалы на телевизоре и компьютере. Нашёл, нажал «Смотреть» — и всё. История, «Буду смотреть» и место, где остановился, одинаковые на всех устройствах.</p>
+      <div class="cta" id="download">
+        <a class="btn primary" id="dl-tv" href="#">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M4 5h16a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2h-6v2h3v1H7v-1h3v-2H4a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2zm0 2v9h16V7z"/></svg>
+          <span>Для Android TV<small>файл .apk</small></span>
+        </a>
+        <a class="btn ghost" id="dl-win" href="#">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M3 5.5 10.5 4.5v7H3zm8.5-1.1L21 3v8.5h-9.5zM3 12.5h7.5v7L3 18.5zm8.5 0H21V21l-9.5-1.4z"/></svg>
+          <span>Для Windows<small>установщик</small></span>
+        </a>
+      </div>
+      <p class="ver" id="ver">Последняя версия загружается…</p>
+    </div>
+    <div class="stage"><div class="deck" id="deck"></div></div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <div class="reveal">
+      <h2>Как Apple TV,<br>только своё.</h2>
+      <p class="sub">Крупно, спокойно и понятно с пульта. Ничего настраивать не нужно — приглашение от своих, и можно смотреть.</p>
+    </div>
+    <div class="screen reveal">
+      <div class="tv">
+        <div class="tvhero"><h4>ВЕЧЕРНИЙ СЕАНС</h4><div class="row"><span>▶ Смотреть</span><span>+ Буду смотреть</span></div></div>
+        <div class="shelf" id="shelf"></div>
+      </div>
+    </div>
+    <div class="features">
+      <div class="card reveal"><div class="ico" style="background:rgba(123,92,255,.18)">▶</div><h3>В одно нажатие</h3><p>Озвучка и качество подбираются сами — под ваш телевизор.</p></div>
+      <div class="card reveal"><div class="ico" style="background:rgba(61,123,255,.18)">⟳</div><h3>Везде одинаково</h3><p>Начали на компьютере — досмотрите на телевизоре с того же места.</p></div>
+      <div class="card reveal"><div class="ico" style="background:rgba(255,92,154,.18)">🎙</div><h3>Поиск голосом</h3><p>Скажите название в пульт — и фильм уже на экране.</p></div>
+      <div class="card reveal"><div class="ico" style="background:rgba(61,220,132,.16)">⏭</div><h3>Сериалы без пауз</h3><p>Заставки пропускаются, следующая серия включается сама.</p></div>
+      <div class="card reveal"><div class="ico" style="background:rgba(255,190,60,.16)">♪</div><h3>Что за песня?</h3><p>Узнаёт музыку прямо во время фильма.</p></div>
+      <div class="card reveal"><div class="ico" style="background:rgba(255,255,255,.1)">✦</div><h3>Без рекламы</h3><p>Никаких подписок, баннеров и «посмотрите ещё».</p></div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <div class="reveal">
+      <h2>Установка за пару минут</h2>
+      <p class="sub">Выберите устройство — покажем, что нажимать.</p>
+    </div>
+    <div class="tabs reveal"><button class="on" data-t="tv">Android TV</button><button data-t="win">Windows</button></div>
+    <div class="steps" id="steps"></div>
+  </div>
+</section>
+
+<section class="final">
+  <div class="wrap reveal">
+    <h2>Попкорн готов?</h2>
+    <p class="sub" style="margin:0 auto">Скачайте программу и попросите код приглашения.</p>
+    <div class="cta">
+      <a class="btn primary" href="#download">Скачать Deep Cinema</a>
+    </div>
+  </div>
+</section>
+
+<footer>Deep Cinema · домашний проект для своих</footer>
+
+<script>
+const REPO='kozenkovnikitavladimirovich-max/deep-cinema-app';
+const grads=[['#7b5cff','#24104f'],['#3d7bff','#0d1d44'],['#ff5c9a','#3b0c22'],['#36c98e','#0b2e22'],['#ffb23d','#3a2306'],['#5ce1ff','#08303a'],['#c45cff','#2b0b3d'],['#ff7a5c','#3a130b']];
+const titles=['Северный ветер','Последний рейс','Тихий город','Лабиринт','Огни гавани','Ночная смена','Сезон дождей','Дальний свет'];
+const g=i=>{const[a,b]=grads[i%grads.length];return `linear-gradient(160deg,${a} 0%,${b} 100%)`};
+
+// постеры первого экрана
+const deck=document.getElementById('deck');
+const spots=[[6,8,-8],[40,0,5],[70,14,10],[18,46,6],[52,42,-6],[82,52,-10]];
+spots.forEach(([x,y,r],i)=>{
+  const p=document.createElement('div');p.className='poster';
+  p.style.cssText=`left:${x}%;top:${y}%;background:${g(i)};transform:rotate(${r}deg) translateZ(${(i%3)*40}px);animation-delay:${-i*1.1}s`;
+  p.innerHTML=`<i>${(7+i*0.3).toFixed(1)}</i><b>${titles[i]}</b>`;
+  deck.appendChild(p);
+});
+// лёгкий наклон за мышью
+window.addEventListener('pointermove',e=>{
+  if(matchMedia('(pointer:coarse)').matches)return;
+  const x=e.clientX/innerWidth-.5,y=e.clientY/innerHeight-.5;
+  deck.style.transform=`rotateY(${x*12}deg) rotateX(${-y*10}deg)`;
+});
+
+// полка в «экране»
+const shelf=document.getElementById('shelf');
+for(let i=0;i<14;i++){const d=document.createElement('div');d.style.background=g(i+3);if(i===2)d.className='f';shelf.appendChild(d)}
+
+// шапка становится стеклянной при прокрутке
+const hdr=document.getElementById('top');
+addEventListener('scroll',()=>hdr.classList.toggle('solid',scrollY>20),{passive:true});
+
+// появление блоков
+const io=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target)}}),{threshold:.15});
+document.querySelectorAll('.reveal').forEach((el,i)=>{el.style.transitionDelay=(el.classList.contains('card')?(i%3)*.08:0)+'s';io.observe(el)});
+
+// шаги установки
+const STEPS={
+  tv:[
+    ['Разрешите установку','Настройки телевизора → Безопасность → «Неизвестные источники» → разрешить для Downloader.'],
+    ['Поставьте Downloader','Найдите в магазине приложений на ТВ бесплатное приложение <b>Downloader</b>.'],
+    ['Скачайте Deep Cinema','Откройте Downloader и введите адрес, который вам прислали. Нажмите «Установить».'],
+    ['Войдите','Откройте Deep Cinema, войдите через Яндекс и введите код приглашения. Готово!'],
+  ],
+  win:[
+    ['Скачайте установщик','Нажмите «Для Windows» вверху страницы.'],
+    ['Запустите','Если Windows скажет «Неизвестный издатель» — нажмите «Подробнее» → «Выполнить в любом случае».'],
+    ['Войдите','Откройте Deep Cinema, войдите через Яндекс и введите код приглашения. Готово!'],
+  ],
+};
+const stepsEl=document.getElementById('steps');
+function show(t){stepsEl.innerHTML=STEPS[t].map((s,i)=>`<div class="step"><span class="num">${i+1}</span><div><b>${s[0]}</b><p>${s[1]}</p></div></div>`).join('')}
+document.querySelectorAll('.tabs button').forEach(b=>b.onclick=()=>{document.querySelectorAll('.tabs button').forEach(x=>x.classList.toggle('on',x===b));show(b.dataset.t)});
+show('tv');
+
+// ссылки на последнюю версию
+const fallback=`https://github.com/${REPO}/releases/latest`;
+document.getElementById('dl-tv').href=fallback;document.getElementById('dl-win').href=fallback;
+fetch(`https://api.github.com/repos/${REPO}/releases/latest`).then(r=>r.json()).then(j=>{
+  const a=j.assets||[];const f=re=>(a.find(x=>re.test(x.name))||{}).browser_download_url;
+  const apk=f(/\.apk$/i),exe=f(/setup.*\.exe$/i);
+  if(apk)document.getElementById('dl-tv').href=apk;
+  if(exe)document.getElementById('dl-win').href=exe;
+  document.getElementById('ver').textContent=`Версия ${String(j.tag_name||'').replace(/^v/,'')} · обновляется сама`;
+}).catch(()=>{document.getElementById('ver').textContent='Последняя версия — на GitHub'});
+</script>
+</body>
+</html>
