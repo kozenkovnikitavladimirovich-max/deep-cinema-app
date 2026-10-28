@@ -1,0 +1,162 @@
+--------- beginning of main
+--------- beginning of system
+--------- beginning of kernel
+10-27 23:58:03.375  3869  3869 I flutter : [IMPORTANT:flutter/shell/common/shell.cc(528)] [Action Required]: Impeller opt-out deprecated.
+10-27 23:58:03.375  3869  3869 I flutter :     The application opted out of Impeller by either using the
+10-27 23:58:03.375  3869  3869 I flutter :     `--no-enable-impeller` flag or the
+10-27 23:58:03.375  3869  3869 I flutter :     `io.flutter.embedding.android.EnableImpeller` `AndroidManifest.xml` entry.
+10-27 23:58:03.375  3869  3869 I flutter :     These options are going to go away in an upcoming Flutter release. Remove
+10-27 23:58:03.375  3869  3869 I flutter :     the explicit opt-out. If you need to opt-out, please report a bug describing
+10-27 23:58:03.375  3869  3869 I flutter :     the issue.
+10-27 23:58:03.375  3869  3869 I flutter : 
+10-27 23:58:03.375  3869  3869 I flutter :     https://github.com/flutter/flutter/issues/new?template=02_bug.yml
+10-27 23:58:03.375  3869  3869 I flutter : 
+10-27 23:58:04.059  3869  3869 I flutter : images via: direct
+10-27 23:58:05.190  3869  3869 I flutter : DCSCROLL revealTop pageTop=668 pixels=0 vh=900
+10-27 23:58:05.190  3869  3869 I flutter : DCSCROLL fullyVisible -> no scroll
+10-27 23:58:36.516  5199  5199 I flutter : DCSHOT home
+10-27 23:58:41.977  3869  3869 I flutter : DCHOVER clear by scroll Axis.vertical RawGestureDetector
+10-27 23:58:41.978  3869  3869 I flutter : DCSCROLL revealTop pageTop=871 pixels=316 vh=900
+10-27 23:58:41.978  3869  3869 I flutter : DCSCROLL ensureVisible pixels=316 max=1782 vh=900
+10-27 23:58:41.978  3869  3869 I flutter : DCHOVER clear by scroll Axis.vertical RawGestureDetector
+10-27 23:58:41.983  3869  3869 I flutter : DCFOCUS key=Arrow Down mode=traditional node=FocusNode rect=43,167 114x207 widget=Focus up=MouseRegion<_ActionsScope<Actions<Semantics<_FocusInheritedScope<Focus
+10-27 23:58:44.247  5647  5647 I flutter : DCSHOT home-down2
+10-27 23:58:48.249  3869  3869 I flutter : DCSCROLL revealTop pageTop=871 pixels=594 vh=900
+10-27 23:58:48.249  3869  3869 I flutter : DCSCROLL fullyVisible -> no scroll
+10-27 23:58:48.287  3869  3869 I flutter : DCFOCUS key=Arrow Right mode=traditional node=FocusNode rect=173,167 114x207 widget=Focus up=MouseRegion<_ActionsScope<Actions<Semantics<_FocusInheritedScope<Focus
+10-27 23:58:50.339  3869  3869 I flutter : DCSCROLL revealTop pageTop=871 pixels=594 vh=900
+10-27 23:58:50.339  3869  3869 I flutter : DCSCROLL fullyVisible -> no scroll
+10-27 23:58:50.391  3869  3869 I flutter : DCFOCUS key=Arrow Right mode=traditional node=FocusNode rect=302,167 114x207 widget=Focus up=MouseRegion<_ActionsScope<Actions<Semantics<_FocusInheritedScope<Focus
+10-27 23:58:52.207  3869  3869 I flutter : DCSCROLL revealTop pageTop=871 pixels=594 vh=900
+10-27 23:58:52.207  3869  3869 I flutter : DCSCROLL fullyVisible -> no scroll
+10-27 23:58:52.216  3869  3869 I flutter : DCFOCUS key=Arrow Right mode=traditional node=FocusNode rect=432,167 114x207 widget=Focus up=MouseRegion<_ActionsScope<Actions<Semantics<_FocusInheritedScope<Focus
+10-27 23:58:53.938  3869  3869 I flutter : DCSCROLL revealTop pageTop=871 pixels=594 vh=900
+10-27 23:58:53.938  3869  3869 I flutter : DCSCROLL fullyVisible -> no scroll
+10-27 23:58:54.000  3869  3869 I flutter : DCFOCUS key=Arrow Right mode=traditional node=FocusNode rect=562,167 114x207 widget=Focus up=MouseRegion<_ActionsScope<Actions<Semantics<_FocusInheritedScope<Focus
+10-27 23:58:56.160  5870  5870 I flutter : DCSHOT home-right4
+10-27 23:58:57.970  3869  3869 I flutter : DCSCROLL revealTop pageTop=1321 pixels=594 vh=900
+10-27 23:58:57.970  3869  3869 I flutter : DCSCROLL ensureVisible pixels=594 max=1782 vh=900
+10-27 23:58:57.970  3869  3869 I flutter : DCHOVER clear by scroll Axis.horizontal RawGestureDetector
+10-27 23:58:57.970  3869  3869 I flutter : DCHOVER clear by scroll Axis.vertical RawGestureDetector
+10-27 23:58:58.032  3869  3869 I flutter : DCFOCUS key=Arrow Down mode=traditional node=FocusNode rect=423,167 114x207 widget=Focus up=MouseRegion<_ActionsScope<Actions<Semantics<_FocusInheritedScope<Focus
+10-27 23:59:00.234  5889  5889 I flutter : DCSHOT home-down3
+10-27 23:59:01.959  3869  3869 I flutter : DCSCROLL revealTop pageTop=1321 pixels=1044 vh=900
+10-27 23:59:01.959  3869  3869 I flutter : DCSCROLL fullyVisible -> no scroll
+10-27 23:59:01.990  3869  3869 I flutter : DCFOCUS key=Arrow Left mode=traditional node=FocusNode rect=293,167 114x207 widget=Focus up=MouseRegion<_ActionsScope<Actions<Semantics<_FocusInheritedScope<Focus
+10-27 23:59:03.636  3869  3869 I flutter : DCSCROLL revealTop pageTop=1321 pixels=1044 vh=900
+10-27 23:59:03.636  3869  3869 I flutter : DCSCROLL fullyVisible -> no scroll
+10-27 23:59:03.657  3869  3869 I flutter : DCFOCUS key=Arrow Left mode=traditional node=FocusNode rect=164,167 114x207 widget=Focus up=MouseRegion<_ActionsScope<Actions<Semantics<_FocusInheritedScope<Focus
+10-27 23:59:05.863  5974  5974 I flutter : DCSHOT home-left2
+10-27 23:59:07.304  3869  3869 I flutter : DCSCROLL revealTop pageTop=1771 pixels=1044 vh=900
+10-27 23:59:07.304  3869  3869 I flutter : DCSCROLL ensureVisible pixels=1044 max=1782 vh=900
+10-27 23:59:07.304  3869  3869 I flutter : DCHOVER clear by scroll Axis.vertical RawGestureDetector
+10-27 23:59:07.333  3869  3869 I flutter : DCFOCUS key=Arrow Down mode=traditional node=FocusNode rect=161,206 102x128 widget=Focus up=MouseRegion<_ActionsScope<Actions<Semantics<_FocusInheritedScope<Focus
+10-27 23:59:08.718  3869  3869 I flutter : DCSCROLL revealTop pageTop=2090 pixels=1428 vh=900
+10-27 23:59:08.718  3869  3869 I flutter : DCSCROLL fullyVisible -> no scroll
+10-27 23:59:08.747  3869  3869 I flutter : DCFOCUS key=Arrow Down mode=traditional node=FocusNode rect=43,397 240x132 widget=Focus up=MouseRegion<_ActionsScope<Actions<Semantics<_FocusInheritedScope<Focus
+10-27 23:59:10.171  3869  3869 I flutter : DCSCROLL revealTop pageTop=2415 pixels=1428 vh=900
+10-27 23:59:10.171  3869  3869 I flutter : DCSCROLL ensureVisible pixels=1428 max=1782 vh=900
+10-27 23:59:10.171  3869  3869 I flutter : DCHOVER clear by scroll Axis.vertical RawGestureDetector
+10-27 23:59:10.183  3869  3869 I flutter : DCFOCUS key=Arrow Down mode=traditional node=FocusNode rect=43,380 128x72 widget=Focus up=MouseRegion<_ActionsScope<Actions<Semantics<_FocusInheritedScope<Focus
+10-27 23:59:12.392  6024  6024 I flutter : DCSHOT home-down6
+10-27 23:59:13.820  3869  3869 I flutter : DCSCROLL revealTop pageTop=2090 pixels=1782 vh=900
+10-27 23:59:13.820  3869  3869 I flutter : DCSCROLL fullyVisible -> no scroll
+10-27 23:59:13.823  3869  3869 I flutter : DCFOCUS key=Arrow Up mode=traditional node=FocusNode rect=43,185 240x132 widget=Focus up=MouseRegion<_ActionsScope<Actions<Semantics<_FocusInheritedScope<Focus
+10-27 23:59:15.294  3869  3869 I flutter : DCSCROLL revealTop pageTop=1771 pixels=1782 vh=900
+10-27 23:59:15.294  3869  3869 I flutter : DCSCROLL ensureVisible pixels=1782 max=1782 vh=900
+10-27 23:59:15.294  3869  3869 I flutter : DCHOVER clear by scroll Axis.vertical RawGestureDetector
+10-27 23:59:15.318  3869  3869 I flutter : DCFOCUS key=Arrow Up mode=traditional node=FocusNode rect=161,206 102x128 widget=Focus up=MouseRegion<_ActionsScope<Actions<Semantics<_FocusInheritedScope<Focus
+10-27 23:59:17.519  6056  6056 I flutter : DCSHOT home-up2
+10-27 23:59:18.866  3869  3869 I flutter : DCFOCUS key=Select mode=traditional node=FocusNode rect=161,206 102x128 widget=Focus up=MouseRegion<_ActionsScope<Actions<Semantics<_FocusInheritedScope<Focus
+10-27 23:59:25.176  6115  6115 I flutter : DCSHOT details
+10-27 23:59:27.185  3869  3869 I flutter : DCFOCUS key=Arrow Down mode=traditional node=FocusScopeNode rect=0,0 960x540 widget=_FocusScopeWithExternalFocusNode up=PrimaryScrollController<_ActionsScope<Actions<Builder<PageStorage<Offstage
+10-27 23:59:28.732  3869  3869 I flutter : DCFOCUS key=Arrow Down mode=traditional node=FocusScopeNode rect=0,0 960x540 widget=_FocusScopeWithExternalFocusNode up=PrimaryScrollController<_ActionsScope<Actions<Builder<PageStorage<Offstage
+10-27 23:59:30.136  3869  3869 I flutter : DCFOCUS key=Arrow Down mode=traditional node=FocusScopeNode rect=0,0 960x540 widget=_FocusScopeWithExternalFocusNode up=PrimaryScrollController<_ActionsScope<Actions<Builder<PageStorage<Offstage
+10-27 23:59:32.370  6234  6234 I flutter : DCSHOT details-down3
+10-27 23:59:33.650  3869  3869 I flutter : DCFOCUS key=Arrow Right mode=traditional node=FocusScopeNode rect=0,0 960x540 widget=_FocusScopeWithExternalFocusNode up=PrimaryScrollController<_ActionsScope<Actions<Builder<PageStorage<Offstage
+10-27 23:59:35.250  3869  3869 I flutter : DCFOCUS key=Arrow Right mode=traditional node=FocusScopeNode rect=0,0 960x540 widget=_FocusScopeWithExternalFocusNode up=PrimaryScrollController<_ActionsScope<Actions<Builder<PageStorage<Offstage
+10-27 23:59:36.749  3869  3869 I flutter : DCFOCUS key=Arrow Right mode=traditional node=FocusScopeNode rect=0,0 960x540 widget=_FocusScopeWithExternalFocusNode up=PrimaryScrollController<_ActionsScope<Actions<Builder<PageStorage<Offstage
+10-27 23:59:38.965  6281  6281 I flutter : DCSHOT details-right3
+10-27 23:59:39.867  3869  3869 I flutter : DCFOCUS key=Arrow Left mode=traditional node=FocusScopeNode rect=0,0 960x540 widget=_FocusScopeWithExternalFocusNode up=PrimaryScrollController<_ActionsScope<Actions<Builder<PageStorage<Offstage
+10-27 23:59:41.354  3869  3869 I flutter : DCFOCUS key=Arrow Left mode=traditional node=FocusScopeNode rect=0,0 960x540 widget=_FocusScopeWithExternalFocusNode up=PrimaryScrollController<_ActionsScope<Actions<Builder<PageStorage<Offstage
+10-27 23:59:43.544  6313  6313 I flutter : DCSHOT details-left2
+10-27 23:59:44.435  3869  3869 I flutter : DCFOCUS key=Arrow Down mode=traditional node=FocusScopeNode rect=0,0 960x540 widget=_FocusScopeWithExternalFocusNode up=PrimaryScrollController<_ActionsScope<Actions<Builder<PageStorage<Offstage
+10-27 23:59:46.651  6333  6333 I flutter : DCSHOT details-down4
+10-27 23:59:47.484  3869  3869 I flutter : DCSCROLL revealTop pageTop=1771 pixels=1428 vh=900
+10-27 23:59:47.484  3869  3869 I flutter : DCSCROLL fullyVisible -> no scroll
+10-27 23:59:47.510  3869  3869 I flutter : DCFOCUS key=Go Back mode=traditional node=FocusNode rect=161,206 102x128 widget=Focus up=MouseRegion<_ActionsScope<Actions<Semantics<_FocusInheritedScope<Focus
+10-27 23:59:51.692  6365  6365 I flutter : DCSHOT back-home
+10-27 23:59:52.863  3869  3869 I flutter : DCFOCUS key=Go Back mode=traditional node=FocusNode rect=161,206 102x128 widget=Focus up=MouseRegion<_ActionsScope<Actions<Semantics<_FocusInheritedScope<Focus
+10-27 23:59:52.863  3869  3869 I flutter : DCSCROLL revealTop pageTop=126 pixels=0 vh=820
+10-27 23:59:52.863  3869  3869 I flutter : DCSCROLL ensureVisible pixels=0 max=0 vh=820
+10-27 23:59:57.259  3869  3869 I flutter : DCSCROLL revealTop pageTop=190 pixels=0 vh=820
+10-27 23:59:57.259  3869  3869 I flutter : DCSCROLL ensureVisible pixels=0 max=0 vh=820
+10-27 23:59:57.323  3869  3869 I flutter : DCFOCUS key=Arrow Down mode=traditional node=FocusNode rect=25,139 188x35 widget=Focus up=MouseRegion<_ActionsScope<Actions<Semantics<_FocusInheritedScope<Focus
+10-27 23:59:59.761  3869  3869 I flutter : DCFOCUS key=Select mode=traditional node=null rect=- widget=null up=
+10-27 23:59:59.762  3869  3869 I flutter : DCSCROLL revealTop pageTop=119 pixels=0 vh=900
+10-27 23:59:59.762  3869  3869 I flutter : DCSCROLL fullyVisible -> no scroll
+10-28 00:00:06.930  6419  6419 I flutter : DCSHOT films
+10-28 00:00:08.652  3869  3869 I flutter : DCSCROLL revealTop pageTop=216 pixels=0 vh=900
+10-28 00:00:08.652  3869  3869 I flutter : DCSCROLL fullyVisible -> no scroll
+10-28 00:00:08.692  3869  3869 I flutter : DCFOCUS key=Arrow Down mode=traditional node=FocusNode rect=340,130 133x241 widget=Focus up=MouseRegion<_ActionsScope<Actions<Semantics<_FocusInheritedScope<Focus
+10-28 00:00:10.058  3869  3869 I flutter : DCHOVER clear by scroll Axis.vertical RawGestureDetector
+10-28 00:00:10.059  3869  3869 I flutter : DCSCROLL revealTop pageTop=804 pixels=153 vh=900
+10-28 00:00:10.059  3869  3869 I flutter : DCSCROLL ensureVisible pixels=153 max=1143 vh=900
+10-28 00:00:10.059  3869  3869 I flutter : DCHOVER clear by scroll Axis.vertical RawGestureDetector
+10-28 00:00:10.118  3869  3869 I flutter : DCFOCUS key=Arrow Down mode=traditional node=FocusNode rect=340,150 133x241 widget=Focus up=MouseRegion<_ActionsScope<Actions<Semantics<_FocusInheritedScope<Focus
+10-28 00:00:12.280  6453  6453 I flutter : DCSHOT films-down2
+10-28 00:00:13.864  3869  3869 I flutter : DCHOVER clear by scroll Axis.vertical RawGestureDetector
+10-28 00:00:13.865  3869  3869 I flutter : DCSCROLL revealTop pageTop=1273 pixels=588 vh=900
+10-28 00:00:13.865  3869  3869 I flutter : DCSCROLL ensureVisible pixels=588 max=2449 vh=900
+10-28 00:00:13.865  3869  3869 I flutter : DCHOVER clear by scroll Axis.vertical RawGestureDetector
+10-28 00:00:13.886  3869  3869 I flutter : DCFOCUS key=Arrow Down mode=traditional node=FocusNode rect=340,150 133x241 widget=Focus up=MouseRegion<_ActionsScope<Actions<Semantics<_FocusInheritedScope<Focus
+10-28 00:00:15.293  3869  3869 I flutter : DCHOVER clear by scroll Axis.vertical RawGestureDetector
+10-28 00:00:15.293  3869  3869 I flutter : DCSCROLL revealTop pageTop=1708 pixels=1023 vh=900
+10-28 00:00:15.293  3869  3869 I flutter : DCSCROLL ensureVisible pixels=1023 max=2449 vh=900
+10-28 00:00:15.293  3869  3869 I flutter : DCHOVER clear by scroll Axis.vertical RawGestureDetector
+10-28 00:00:15.318  3869  3869 I flutter : DCFOCUS key=Arrow Down mode=traditional node=FocusNode rect=340,150 133x241 widget=Focus up=MouseRegion<_ActionsScope<Actions<Semantics<_FocusInheritedScope<Focus
+10-28 00:00:17.493  6488  6488 I flutter : DCSHOT films-down4
+10-28 00:00:19.216  3869  3869 I flutter : DCSCROLL revealTop pageTop=1522 pixels=1273 vh=900
+10-28 00:00:19.216  3869  3869 I flutter : DCSCROLL fullyVisible -> no scroll
+10-28 00:00:19.219  3869  3869 I flutter : DCFOCUS key=Arrow Right mode=traditional node=FocusNode rect=488,150 133x241 widget=Focus up=MouseRegion<_ActionsScope<Actions<Semantics<_FocusInheritedScope<Focus
+10-28 00:00:20.629  3869  3869 I flutter : DCSCROLL revealTop pageTop=1522 pixels=1273 vh=900
+10-28 00:00:20.629  3869  3869 I flutter : DCSCROLL fullyVisible -> no scroll
+10-28 00:00:20.639  3869  3869 I flutter : DCFOCUS key=Arrow Right mode=traditional node=FocusNode rect=636,150 133x241 widget=Focus up=MouseRegion<_ActionsScope<Actions<Semantics<_FocusInheritedScope<Focus
+10-28 00:00:22.875  6523  6523 I flutter : DCSHOT films-right2
+10-28 00:00:24.326  3869  3869 I flutter : DCHOVER clear by scroll Axis.vertical RawGestureDetector
+10-28 00:00:24.326  3869  3869 I flutter : DCSCROLL revealTop pageTop=2143 pixels=1458 vh=900
+10-28 00:00:24.326  3869  3869 I flutter : DCSCROLL ensureVisible pixels=1458 max=2449 vh=900
+10-28 00:00:24.326  3869  3869 I flutter : DCHOVER clear by scroll Axis.vertical RawGestureDetector
+10-28 00:00:24.402  3869  3869 I flutter : DCFOCUS key=Arrow Down mode=traditional node=FocusNode rect=636,150 133x241 widget=Focus up=MouseRegion<_ActionsScope<Actions<Semantics<_FocusInheritedScope<Focus
+10-28 00:00:25.719  3869  3869 I flutter : DCHOVER clear by scroll Axis.vertical RawGestureDetector
+10-28 00:00:25.719  3869  3869 I flutter : DCSCROLL revealTop pageTop=2578 pixels=1894 vh=900
+10-28 00:00:25.719  3869  3869 I flutter : DCSCROLL ensureVisible pixels=1894 max=3755 vh=900
+10-28 00:00:25.719  3869  3869 I flutter : DCHOVER clear by scroll Axis.vertical RawGestureDetector
+10-28 00:00:25.744  3869  3869 I flutter : DCFOCUS key=Arrow Down mode=traditional node=FocusNode rect=636,150 133x241 widget=Focus up=MouseRegion<_ActionsScope<Actions<Semantics<_FocusInheritedScope<Focus
+10-28 00:00:27.269  3869  3869 I flutter : DCHOVER clear by scroll Axis.vertical RawGestureDetector
+10-28 00:00:27.270  3869  3869 I flutter : DCSCROLL revealTop pageTop=3014 pixels=2329 vh=900
+10-28 00:00:27.270  3869  3869 I flutter : DCSCROLL ensureVisible pixels=2329 max=3755 vh=900
+10-28 00:00:27.270  3869  3869 I flutter : DCHOVER clear by scroll Axis.vertical RawGestureDetector
+10-28 00:00:27.276  3869  3869 I flutter : DCFOCUS key=Arrow Down mode=traditional node=FocusNode rect=636,150 133x241 widget=Focus up=MouseRegion<_ActionsScope<Actions<Semantics<_FocusInheritedScope<Focus
+10-28 00:00:29.467  6573  6573 I flutter : DCSHOT films-down7
+10-28 00:00:30.900  3869  3869 I flutter : DCHOVER clear by scroll Axis.vertical RawGestureDetector
+10-28 00:00:30.901  3869  3869 I flutter : DCSCROLL revealTop pageTop=2207 pixels=2392 vh=900
+10-28 00:00:30.901  3869  3869 I flutter : DCSCROLL ensureVisible pixels=2392 max=3755 vh=900
+10-28 00:00:30.901  3869  3869 I flutter : DCHOVER clear by scroll Axis.vertical RawGestureDetector
+10-28 00:00:30.956  3869  3869 I flutter : DCFOCUS key=Arrow Up mode=traditional node=FocusNode rect=636,150 133x241 widget=Focus up=MouseRegion<_ActionsScope<Actions<Semantics<_FocusInheritedScope<Focus
+10-28 00:00:32.208  3869  3869 I flutter : DCHOVER clear by scroll Axis.vertical RawGestureDetector
+10-28 00:00:32.209  3869  3869 I flutter : DCSCROLL revealTop pageTop=1771 pixels=1957 vh=900
+10-28 00:00:32.209  3869  3869 I flutter : DCSCROLL ensureVisible pixels=1957 max=3755 vh=900
+10-28 00:00:32.209  3869  3869 I flutter : DCHOVER clear by scroll Axis.vertical RawGestureDetector
+10-28 00:00:32.256  3869  3869 I flutter : DCFOCUS key=Arrow Up mode=traditional node=FocusNode rect=636,150 133x241 widget=Focus up=MouseRegion<_ActionsScope<Actions<Semantics<_FocusInheritedScope<Focus
+10-28 00:00:33.700  3869  3869 I flutter : DCHOVER clear by scroll Axis.vertical RawGestureDetector
+10-28 00:00:33.700  3869  3869 I flutter : DCSCROLL revealTop pageTop=1336 pixels=1522 vh=900
+10-28 00:00:33.700  3869  3869 I flutter : DCSCROLL ensureVisible pixels=1522 max=3755 vh=900
+10-28 00:00:33.700  3869  3869 I flutter : DCHOVER clear by scroll Axis.vertical RawGestureDetector
+10-28 00:00:33.731  3869  3869 I flutter : DCFOCUS key=Arrow Up mode=traditional node=FocusNode rect=636,150 133x241 widget=Focus up=MouseRegion<_ActionsScope<Actions<Semantics<_FocusInheritedScope<Focus
+10-28 00:00:35.113  3869  3869 I flutter : DCHOVER clear by scroll Axis.vertical RawGestureDetector
+10-28 00:00:35.114  3869  3869 I flutter : DCSCROLL revealTop pageTop=901 pixels=1087 vh=900
+10-28 00:00:35.114  3869  3869 I flutter : DCSCROLL ensureVisible pixels=1087 max=3755 vh=900
+10-28 00:00:35.114  3869  3869 I flutter : DCHOVER clear by scroll Axis.vertical RawGestureDetector
+10-28 00:00:35.136  3869  3869 I flutter : DCFOCUS key=Arrow Up mode=traditional node=FocusNode rect=636,150 133x241 widget=Focus up=MouseRegion<_ActionsScope<Actions<Semantics<_FocusInheritedScope<Focus
+10-28 00:00:37.329  6631  6631 I flutter : DCSHOT films-up4
